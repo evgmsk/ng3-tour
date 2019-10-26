@@ -1,27 +1,172 @@
-# Ng3Tour
+# Ng-Tour
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 7.0.3.
+An Angular Tour (Ng-tour) light library is **built entirely** in Angular and allows you easily master guide for your users through your site showing them all the sections and features including **lazily loaded**.
 
-## Development server
+**For Angular 2+ (2, 4, 5, 6, 7, 8)**
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+## Installation
 
-## Code scaffolding
+    npm install --save ng3-tour
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+## Usage 
 
-## Build
+1. Import the NgTourModule in your AppModule:
+```
+    @NgModule({
+        declarations: [AppComponent],
+        imports: [
+                NgTourModule.forRoot(),
+                RouterModule.forRoot([]),
+                BrowserModule
+        ],
+        providers: [],
+        bootstrap: [AppComponent]
+        })
+    export class AppModule { }
+```
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+2. Import if needed the NgTourModule in your Feature Modules:
+```
+    @NgModule({
+        declarations: [FeatureComponent],
+        imports: [
+            NgTourModule.forChild(),
+        ],
+        providers: [],
+        })
+    export class FeatureModule { }
+```
+3. Mark `<router-outlet>` in **app.component.html** with the **ngIfToor** directive to use provided template
+```
+    <route-outlet *ngIfToor></route-outlet>
+```
 
-## Running unit tests
+4. Or define in **app.component.html** custom template: 
+```
+    <ng-tour-step-template *ngIfTour="true">
+        <custom-template></custom-template>
+    </ng-tour-template>
+```
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+5. Mark your target HTML elements with the **ngTourStep** directive with unique name:
+```
+    <div ngTourStep="first">...</div>
+    <span ngTourStep="second">...</span>
+```
 
-## Running end-to-end tests
+6. Inject NgTourService in your Component 
 
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
+```
+@Component({
+    selector: 'your-component',
+    templateUrl: './your.component.html'
+})
+export class AppComponent {
+    constructor(private readonly tourService: TourService) { }
+}
+```
 
-## Further help
+7. Create a configuration object and pass it as an argument to the startTour method
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+```
+const tour = {
+    steps: [
+        {stepName: "first", route: "home"},
+        {stepName: "nextStep", route: "about", options: stepPlacement: 'top'}}
+        ],
+    tourOptions: {
+        backdrop: false, stepPlacement: 'down'
+    }
+}
+
+@Component({...
+
+ngOnInit() {
+    this.tourService.startTour(tour);
+}
+
+of cause this also possible:
+
+onClick() {
+    this.tourService.startTour(tour);
+}
+```
+
+## API reference
+
+### Tour Properties
+Name | Required | Type | Destination | Default value
+-----|----|----|------------|--------------
+steps | yes | TourStep[] | this option define Tour Steps and its order| 
+tourOption | no | TourStepI | Set common options. Could be redefined with Step options
+
+
+### Step Properties (StepOptions)
+Name | Required | Type | Destination | Default value
+-----|----|----|------------|--------------
+stepName | yes | string | define unique name of the Step | 
+route | yes | string | define route corresponded to the Step |
+index | no | number |  'Index' value is set by TourService service according to the position of the Step in the Steps array | 
+title | no | string | Set title of the current Step | ""
+description | no | string | Set description of the current Step | ""
+options | no | StepOptionsI | to customize separate Step | described below
+options: | | | |
+className | no | string | set custom class to step component | ""
+themeColor| no | string | Define theme color | 'rgb(20, 60, 60)'
+backdrop | no | boolean | Add backdrop if option set true | true
+backdropColor| no | string | Define bacdrop color | 'rgba(20, 60, 60, .7)'
+placement | no | string |  This option define position of step modal relative to target. Possible values: 'down', 'top', 'left', 'right', 'center' **( case no matter )** | "Down"
+customTemplate | no | boolean | This option has by default value true if **ngIfTour** directive used within `<ng-tour-step-template ngIfTour="true"></ng-tour-step-template>`. (Value could be reset within Tour options or Step options). If , the default value of the option will be false.  | true/false
+withoutCounter | no | boolean |If true remove counter including a number of the step and total number of steps from the Step template | false
+withoutPrev | no | boolean |If true remove 'Prev' control button from the Step template | false
+arrowToTarget | no | boolean | If true add arrow in direction corresponded location of the Step target  | true
+scrollTo | no | boolean | If true scroll window to show Step target add modal (popup) | true
+scrollSmooth | no | boolean | If true  option behavior of the window scroll is set to smooth | false
+continueIfTargetAbsent | no | boolean | If true and the Step target is absent will initialize the next Step | true
+animatedStep | no | boolean | If true add classes to control css animation | true
+fixed | no | boolean | If value equals true position css property of the Step Component and Backdrop Component is set to the 'fixed' | true
+animationDelay | no | number | Required in case of routing with lazy loaded Feature Modules. Delay defined in ms | 500
+targetResize | no | number[] | Change size in px of the Step target window. Number with index 0 define. Number with index 1 if exist define Height differ from the Width | [0]
+
+### Services
+
+#### TourService: 
+Name | Args |  Description | Return
+-----|------|---------------------|--------
+startTour | tour: TourI | start Tour (The only necessary to use lib) | void |
+initStep | index: number | Add new stepName to Tour Steps Stream implemented as BehaviorSubject | void 
+getStepSubject | | return Tour Steps Stream | Observable`<TourStepI>`[]
+getTotal | | return number of steps | 
+getStepByName | stepName: string | return step object | TourStepI
+isRoutecChanged |  | return true if route previous step differ from current | boolean
+getTourStatus | | return true if tour is started and not ended | boolean
+stopTour | | stop Tour | void 
+
+#### StepTargetService:
+Name | Args |     Description     | Return
+-----|------|---------------------|------------
+getTargetSubject | | return stream of targets contaning stapeName and data of corresponding target (size and position relate to document) | Observable`<StepTargetI>`[]
+
+### Directives 
+
+#### ngIfTour 
+@Input	| Required | Description | Values/Type
+--------|----------|-------------|-------------
+ngIfTour | depend on a case of usage | The value should be set true if the directive is used in the `<ng-tour-template *ngIfTour="true"></ng-tour-template>` (This have sense if you). Otherwise, value could be omitted or set false | boolean
+
+#### ngTourStep 
+@Input	| Required | Description | Values/Type
+--------|----------|-------------|-------------
+ngTourStep | yes | The value should be unique string | string
+
+### Components 
+
+#### ng-tour-template
+To create custom step modal you can use follow component's methods:
+
+Name | Args |     Description     | Return
+-----|------|---------------------|------------
+handleNext |  | call tourService.initStep(with index of the next step) | void
+handlePrev |   | Call tourService.initStep(with index of the previous step) | void
+handleClose | | Call tourService.stopTour | void
+

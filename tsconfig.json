@@ -16,6 +16,14 @@
     "lib": [
       "es2018",
       "dom"
-    ]
+    ],
+    "paths": {
+      "ng3-tour": [
+        "dist/ng3-tour"
+      ],
+      "ng3-tour/*": [
+        "dist/ng3-tour/*"
+      ]
+    }
   }
 }
