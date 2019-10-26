@@ -17,6 +17,7 @@ export class TourStepBackComponent implements OnDestroy, OnInit {
   tourSubject = new Subject<any>();
   targetSubject = new Subject<any>();
   state: boolean;
+  transparent: 'transparent';
 
   constructor(
     private readonly tourService: TourService,
