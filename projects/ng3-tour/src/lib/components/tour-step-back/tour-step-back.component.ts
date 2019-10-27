@@ -16,8 +16,7 @@ export class TourStepBackComponent implements OnDestroy, OnInit {
   @Input() position: string;
   tourSubject = new Subject<any>();
   targetSubject = new Subject<any>();
-  state: boolean;
-  transparent: 'transparent';
+  windowBackground: string;
 
   constructor(
     private readonly tourService: TourService,
@@ -28,14 +27,14 @@ export class TourStepBackComponent implements OnDestroy, OnInit {
       takeUntil(this.tourSubject)
     ).subscribe((step: string) => {
       if (this.tourService.getTourStatus()) {
-        this.state = false;
+        this.windowBackground = this.backgroundColor;
       }
     });
     this.stepTargetService.getTargetSubject().pipe(
       takeUntil(this.tourSubject)
     ).subscribe((step: {stepName: string, target: Element}) => {
       if (step && this.tourService.getTourStatus()) {
-        this.state = true;
+        this.windowBackground = 'transparent';
       }
     });
   }

@@ -53,7 +53,6 @@ export class StepTargetService {
       return this.targetExist$;
   }
   public setTargetSubject(value: {stepName: string, target: Element}): void {
-    console.log('exist', value);
     this.targetExist$.next(value);
   }
 }

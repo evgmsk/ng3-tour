@@ -34,11 +34,14 @@ $font-color: rgba(50 ,100, 110, .8);
 }
 
 .tour-step-wrapper {
-    &.animation-off .tour-step-modal{
+    &.fade-on .tour-step-modal{
         opacity: 0;
     }
+    &:not(.animation-on) .tour-step-modal {
+        animation: fade .4s ease-in-out;
+    }
     &.pos-down {
-        &.animation-on.animate-modal .tour-step-modal {
+        &.animation-on .tour-step-modal {
             animation: stepDown .4s ease-in-out;
         }
         &.with-arrow .tour-step-modal::after {
@@ -46,7 +49,7 @@ $font-color: rgba(50 ,100, 110, .8);
         }
     }
     &.pos-top {
-        &.animation-on.animate-modal .tour-step-modal {
+        &.animation-on .tour-step-modal {
             animation: stepTop .4s ease-in-out;
         }
         &.with-arrow .tour-step-modal::after {
@@ -54,7 +57,7 @@ $font-color: rgba(50 ,100, 110, .8);
         }
     }
     &.pos-left {
-        &.animation-on.animate-modal .tour-step-modal {
+        &.animation-on .tour-step-modal {
             animation: stepLeft .4s ease-in-out;
         }
         &.with-arrow .tour-step-modal::after {
@@ -62,7 +65,7 @@ $font-color: rgba(50 ,100, 110, .8);
         }
     }
     &.pos-right {
-        &.animation-on.animate-modal .tour-step-modal {
+        &.animation-on .tour-step-modal {
             animation: stepRight .4s ease-in-out;
         }
         &.with-arrow .tour-step-modal::after {
@@ -70,9 +73,8 @@ $font-color: rgba(50 ,100, 110, .8);
         }
     }
     &.pos-center {
-        &.animation-on.animate-modal .tour-step-modal {
-            opacity: 1;
-            transition: all .6s ease-in-out;
+        &.animation-on .tour-step-modal {
+            animation: fade .4s ease-in-out;
         }
     }
 }
@@ -142,7 +144,14 @@ $font-color: rgba(50 ,100, 110, .8);
         width: 100%;
     }
 }
-
+@keyframes fade {
+    0% {
+        opacity: 0;
+    }
+    100% { 
+        opacity: 1;
+    }
+}
 @keyframes stepDown {
     0% {
         transform: translateY(30px);

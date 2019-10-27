@@ -44,7 +44,7 @@ export class TourRootDirective implements OnInit, OnDestroy {
         if (!this.isBrowser) {
             return;
         }
-        if (this.customTemplate) {
+        if (this.customTemplate && this.template['_parentView'].nodes.length > 2) {
             this.tourService.setPresets({customTemplate: true});
             this.targetService.getTargetSubject().pipe(
                 takeUntil(this.onDestroy),
@@ -69,6 +69,7 @@ export class TourRootDirective implements OnInit, OnDestroy {
                         this.isCreated = true;
                         componentRef = this.viewContaner.createComponent(this.modalFactory);
                     } else if (!step && this.isCreated) {
+                        this.isCreated = false;
                         this.viewContaner.remove(this.viewContaner.indexOf(componentRef));
                     }
                     return step;

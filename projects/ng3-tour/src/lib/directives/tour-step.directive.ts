@@ -39,7 +39,6 @@ export class TourStepDirective implements AfterViewInit, OnDestroy {
           const delay = this.tour.isRouteChanged()
             ? this.tour.getStepByName(stepName).options.animationDelay
             : 0;
-          console.log(stepName, this.name, target, delay);
           this.timeout = setTimeout(() => this.stepTarget.setTargetSubject({target, stepName}), delay);
           return stepName;
         }

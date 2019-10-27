@@ -101,7 +101,6 @@ export class TourStepComponent implements OnInit, OnDestroy, TourHandlersI {
     }
     const delay = this.tourService.getStepByName(step).options.animationDelay;
     const target = document.querySelector(`[ngtourstep=${step}]`);
-    console.log(target, delay, times);
     if (times && this.tourService.isRouteChanged() && !target) {
       this.timeouts[this.timeouts.length] = setTimeout(() => this.checkTarget(step, times - 1), delay);
     } else if (!target) {
@@ -124,8 +123,10 @@ export class TourStepComponent implements OnInit, OnDestroy, TourHandlersI {
     const source = (step && step.options) || this.tourService.getFirstStepOptions();
     const {arrowToTarget, animatedStep, placement, className} = source;
     const arrowClass = arrowToTarget ? 'with-arrow' : '';
-    this.class = `${className} ${animatedStep ? 'animate-modal' : ''} pos-${placement}
-      ${step ? 'animation-on' : 'animation-off'} ${arrowClass}`.replace(/\s+/g, ' ').trim();
+    const animationClass = animatedStep
+      ? (step ? 'animation-on' : 'fade-on')
+      : (step ? '' : 'fade-on');
+    this.class = `${arrowClass} ${className} pos-${placement} ${animationClass}`.trim();
   }
   saveTarget(target: Element): void {
     this.target = this.stepTargetService.resizeTarget(
