@@ -25,17 +25,17 @@ export interface StepOptionsI {
   withoutPrev?: boolean;
   customTemplate?: boolean;
   themeColor?: string;
+  opacity?: number;
   placement?: string;
   arrowToTarget?: boolean;
   backdrop?: boolean;
-  backdropColor?: string;
   animatedStep?: boolean;
   smoothScroll?: boolean;
   scrollTo?: boolean;
   fixed?: boolean;
   continueIfTargetAbsent?: boolean; // init next step if target is not found for current one
   stepTargetResize?: number[]; // change size of a 'window' for step target
-  animationDelay?: number; // for the case of the lazy routing
+  delay?: number; // for the case of the lazy routing
 }
 
 export const defaultOptions: StepOptionsI = {
@@ -47,14 +47,14 @@ export const defaultOptions: StepOptionsI = {
   smoothScroll: false,
   scrollTo: true,
   themeColor: 'rgb(20, 60, 60)',
+  opacity: .6,
   placement: 'down',
   arrowToTarget: true,
   stepTargetResize: [0],
-  animationDelay: 500,
+  delay: 500,
   animatedStep: true,
   fixed: false,
   backdrop: true,
-  backdropColor: 'rgba(20, 60, 60, .7)'
 };
 
 export class StepOptions implements StepOptionsI {
@@ -63,6 +63,7 @@ export class StepOptions implements StepOptionsI {
   withoutPrev?: boolean;
   customTemplate?: boolean;
   themeColor?: string;
+  opacity?: number;
   placement: string;
   arrowToTarget?: boolean;
   backdrop?: boolean;
@@ -72,9 +73,9 @@ export class StepOptions implements StepOptionsI {
   scrollTo?: boolean;
   continueIfTargetAbsent?: boolean;
   stepTargetResize?: number[];
-  animationDelay?: number;
+  delay?: number;
   fixed?: boolean;
-  constructor(options: StepOptionsI) {
+  constructor(options: StepOptionsI = defaultOptions) {
     const {
       className,
       continueIfTargetAbsent,
@@ -84,27 +85,27 @@ export class StepOptions implements StepOptionsI {
       smoothScroll,
       scrollTo,
       themeColor,
+      opacity,
       placement,
       arrowToTarget,
       stepTargetResize,
-      animationDelay,
+      delay,
       animatedStep,
       fixed,
       backdrop,
-      backdropColor
-    } = {...defaultOptions, ...options};
+    } = options;
     this.className = className;
     this.placement = placement;
     this.arrowToTarget = arrowToTarget;
     this.themeColor = themeColor;
+    this.opacity = opacity;
     this.backdrop = backdrop;
-    this.backdropColor = backdropColor;
     this.customTemplate = customTemplate;
     this.withoutCounter = withoutCounter;
     this.withoutPrev = withoutPrev;
     this.continueIfTargetAbsent = continueIfTargetAbsent;
     this.stepTargetResize = stepTargetResize;
-    this.animationDelay = animationDelay;
+    this.delay = delay;
     this.animatedStep = animatedStep;
     this.smoothScroll = smoothScroll;
     this.scrollTo = scrollTo;
@@ -127,13 +128,13 @@ export class TourService {
   private routeChanged = false;
   private firstStepOptions: StepOptionsI;
   private withoutLogs = false;
-  private presets: StepOptionsI = {customTemplate: false};
+  private presets: StepOptionsI = {};
   constructor(private router: Router, private readonly targetService: StepTargetService) { }
 
   private setSteps(tour: TourI): void {
+    const options = new StepOptions({...defaultOptions, ...this.presets, ...tour.tourOptions});
     this.steps = tour.steps.map((x, i) => {
       x.index = i;
-      const options = new StepOptions({...this.presets, ...(tour.tourOptions || defaultOptions)});
       x.options = x.options ? {...options, ...x.options} : options;
       return x;
     });
@@ -159,7 +160,7 @@ export class TourService {
   }
   validateOptions(tour: TourI): boolean {
     const regExpr = /^top$|^down$|^left$|^right$|^center$/i;
-    let isValid: boolean;
+    let isValid = true;
     tour.steps.forEach((step: TourStepI) => {
       if (step.options && step.options.placement) {
         isValid = regExpr.test(step.options.placement);

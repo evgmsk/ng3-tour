@@ -44,6 +44,7 @@ export class TourStepComponent implements OnInit, OnDestroy, TourHandlersI {
   modalMinHeight = 180;
   modalMinWidth = 200;
   modalHeight: number;
+  targetBackground: string;
   constructor(
     private readonly tourService: TourService,
     private readonly stepTargetService: StepTargetService,
@@ -66,9 +67,13 @@ export class TourStepComponent implements OnInit, OnDestroy, TourHandlersI {
       takeUntil(this.onDestroy),
       map(step => {
         this.currentStep = null;
+        if (!step) {
+          return step;
+        }
         this.resetClasses();
-        if (step && this.tourService.isRouteChanged()) {
-          const delay = this.tourService.getStepByName(step).options.animationDelay;
+        const {themeColor, delay} = this.tourService.getStepByName(step).options;
+        this.targetBackground = themeColor;
+        if (this.tourService.isRouteChanged()) {
           this.timeouts[this.timeouts.length] = setTimeout(() => this.checkTarget(step), delay + 100);
         } else {
           this.timeouts[this.timeouts.length] = setTimeout(() => this.checkTarget(step), 100);

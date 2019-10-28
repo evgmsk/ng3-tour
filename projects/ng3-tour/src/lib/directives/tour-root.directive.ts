@@ -23,7 +23,7 @@ import {TourService} from '../services/tour.service';
     selector: '[ngIfTour]',
 })
 export class TourRootDirective implements OnInit, OnDestroy {
-    @Input('ngIfTour') customTemplate?: boolean;
+    customTemplate = false;
     private readonly onDestroy = new Subject<any>();
     isEmbedded: boolean;
     isCreated: boolean;
@@ -44,36 +44,25 @@ export class TourRootDirective implements OnInit, OnDestroy {
         if (!this.isBrowser) {
             return;
         }
-        if (this.customTemplate && this.template['_parentView'].nodes.length > 2) {
+        let componentRef: any;
+        this.viewContaner.createEmbeddedView(this.template);
+        // tslint:disable-next-line:no-string-literal
+        this.customTemplate = this.template['_parentView'].nodes.filter((x: any) => x.instance && x.instance.tourService).length === 2;
+        if (this.customTemplate) {
             this.tourService.setPresets({customTemplate: true});
-            this.targetService.getTargetSubject().pipe(
-                takeUntil(this.onDestroy),
-                map((step: any) => {
-                    if (step && !this.isEmbedded) {
-                        this.isEmbedded = true;
-                        this.viewContaner.createEmbeddedView(this.template);
-                    } else if (!step) {
-                        this.isEmbedded = false;
-                        this.viewContaner.clear();
-                    }
-                    return step;
-                  }
-            )).subscribe();
         } else {
-            let componentRef: any;
-            this.viewContaner.createEmbeddedView(this.template);
             this.targetService.getTargetSubject().pipe(
-                takeUntil(this.onDestroy),
-                map((step: any) => {
-                    if (step && !this.isCreated) {
-                        this.isCreated = true;
-                        componentRef = this.viewContaner.createComponent(this.modalFactory);
-                    } else if (!step && this.isCreated) {
-                        this.isCreated = false;
-                        this.viewContaner.remove(this.viewContaner.indexOf(componentRef));
-                    }
-                    return step;
-                  }
+            takeUntil(this.onDestroy),
+            map((step: any) => {
+                if (step && !this.isCreated) {
+                    this.isCreated = true;
+                    componentRef = this.viewContaner.createComponent(this.modalFactory);
+                } else if (!step && this.isCreated) {
+                    this.isCreated = false;
+                    this.viewContaner.remove(this.viewContaner.indexOf(componentRef));
+                }
+                return step;
+                }
             )).subscribe();
         }
     }

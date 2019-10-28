@@ -36,32 +36,34 @@ An Angular Tour (Ng-tour) light library is **built entirely** in Angular and all
         })
     export class FeatureModule { }
 ```
-3. Mark `<router-outlet>` in **app.component.html** with the **ngIfToor** directive to use provided template
+3. Use **ngIfTour** directive inside **app.component.html**. A good choice is marking `<router-outlet>` with it.
+
 ```
     <route-outlet *ngIfToor></route-outlet>
 ```
 
-4. Or define in **app.component.html** custom template: 
+4. If you want to use custom step template wrap it in `<ng-tour-step-template>` and place in **app.component.html**. 
 ```
-    <ng-tour-step-template *ngIfTour="true">
+    <route-outlet *ngIfToor></route-outlet>
+    <ng-tour-step-template>
         <custom-template></custom-template>
     </ng-tour-template>
 ```
 
-5. Mark your target HTML elements with the **ngTourStep** directive with unique name:
+5. Mark your target HTML elements with the **ngTourStep** directive with a unique name.
 ```
     <div ngTourStep="first">...</div>
     <span ngTourStep="second">...</span>
 ```
 
-6. Inject NgTourService in your Component 
+6. Inject NgTourService in your Component. Good Choice is Component where Tour is being started.
 
 ```
 @Component({
-    selector: 'your-component',
+    selector: 'component-of-your-choice',
     templateUrl: './your.component.html'
 })
-export class AppComponent {
+export class ComponentOfYourChoice {
     constructor(private readonly tourService: TourService) { }
 }
 ```
@@ -71,7 +73,7 @@ export class AppComponent {
 ```
 const tour = {
     steps: [
-        {stepName: "first", route: "home"},
+        {stepName: "first", route: "home", options: {backdrop: true}},
         {stepName: "nextStep", route: "about", options: stepPlacement: 'top'}}
         ],
     tourOptions: {
@@ -114,9 +116,9 @@ options: | | | |
 className | no | string | set custom class to step component | ""
 themeColor| no | string | Define theme color | 'rgb(20, 60, 60)'
 backdrop | no | boolean | Add backdrop if option set true | true
-backdropColor| no | string | Define bacdrop color | 'rgba(20, 60, 60, .7)'
+opacity| no | number | Define the backdrop opacity | .6
 placement | no | string |  This option define position of step modal relative to target. Possible values: 'down', 'top', 'left', 'right', 'center' **( case no matter )** | "Down"
-customTemplate | no | boolean | This option has by default value true if **ngIfTour** directive used within `<ng-tour-step-template ngIfTour="true"></ng-tour-step-template>`. (Value could be reset within Tour options or Step options). If , the default value of the option will be false.  | true/false
+customTemplate | no | boolean | This option has by default value true if  used `<ng-tour-step-template><custom-template</custom-template></ng-tour-step-template>`. (Value could be reset within Tour options or Step options). If , the default value of the option will be false.  | true/false
 withoutCounter | no | boolean |If true remove counter including a number of the step and total number of steps from the Step template | false
 withoutPrev | no | boolean |If true remove 'Prev' control button from the Step template | false
 arrowToTarget | no | boolean | If true add arrow in direction corresponded location of the Step target  | true

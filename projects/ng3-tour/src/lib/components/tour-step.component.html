@@ -1,9 +1,10 @@
 <div class="tour-step-wrapper" *ngIf="step$ | async as step" [ngClass]="class">
   <ng-tour-step-back
     *ngIf="step.options.backdrop && target"
-    [backgroundColor]="step.options.backdropColor"
+    [themeColor]="step.options.themeColor"
     [stepBackSize]="target"
     [position]="step.options.fixed ? 'fixed' : 'absolute'"
+    [targetBackground]="targetBackground"
   >
   </ng-tour-step-back>
   <div
