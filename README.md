@@ -118,7 +118,7 @@ themeColor| no | string | Define theme color | 'rgb(20, 60, 60)'
 backdrop | no | boolean | Add backdrop if option set true | true
 opacity| no | number | Define the backdrop opacity | .6
 placement | no | string |  This option define position of step modal relative to target. Possible values: 'down', 'top', 'left', 'right', 'center' **( case no matter )** | "Down"
-customTemplate | no | boolean | This option has by default value true if  used `<ng-tour-step-template><custom-template</custom-template></ng-tour-step-template>`. (Value could be reset within Tour options or Step options). If , the default value of the option will be false.  | true/false
+customTemplate | no | boolean | This option has by default value true if was used `<ng-tour-step-template>`. (Value could be reset within Tour options or Step options). Otherwise, the default value of the option will be false. | true/false
 withoutCounter | no | boolean |If true remove counter including a number of the step and total number of steps from the Step template | false
 withoutPrev | no | boolean |If true remove 'Prev' control button from the Step template | false
 arrowToTarget | no | boolean | If true add arrow in direction corresponded location of the Step target  | true
@@ -152,9 +152,8 @@ getTargetSubject | | return stream of targets contaning stapeName and data of co
 ### Directives 
 
 #### ngIfTour 
-@Input	| Required | Description | Values/Type
---------|----------|-------------|-------------
-ngIfTour | depend on a case of usage | The value should be set true if the directive is used in the `<ng-tour-template *ngIfTour="true"></ng-tour-template>` (This have sense if you). Otherwise, value could be omitted or set false | boolean
+This directive has not Input properties.
+Use it inside **app.component.html**.
 
 #### ngTourStep 
 @Input	| Required | Description | Values/Type
