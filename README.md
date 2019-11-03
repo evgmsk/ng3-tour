@@ -170,12 +170,12 @@ ngTourStep | yes | The value should be unique string | string
 #### ng-tour-template
 To create custom step modal you can use follow component's methods:
 
-Output | Args |     Description     | 
------|------|---------------------|------------
-next |  | Call before tourService.initStep(with index of the next step) | 
+Output | Args |     Description     
+-----|------|---------------------
+next |  | Call before tourService.initStep(with index of the next step)  
 prev |   | Call before tourService.initStep(with index of the previous step) |
-break | | Call before tourService.stopTour | 
-done | | Call before tourService.stopTour |
+break | | Call before tourService.stopTour 
+done | | Call before tourService.stopTour 
 
 ### SCSS Customizing
 You can easily redefine styles of the provided Step template in any scss files importing in style.scss file of your project. 
