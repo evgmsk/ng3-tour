@@ -1,5 +1,5 @@
 /*
- * Public API Surface of ng3-tour
+ * Public API Surface of ng-tour
  */
 
 export * from './lib/components/tour-step.component';
@@ -8,4 +8,4 @@ export * from './lib/services/step-target.service';
 export * from './lib/services/tour.service';
 export * from './lib/directives/tour-root.directive';
 export * from './lib/directives/tour-step.directive';
-export * from './lib/ng3-tour.module';
+export * from './lib/ng-tour.module';

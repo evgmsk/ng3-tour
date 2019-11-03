@@ -18,11 +18,11 @@
       "dom"
     ],
     "paths": {
-      "ng3-tour": [
-        "dist/ng3-tour"
+      "ng-tour": [
+        "dist/ng-tour"
       ],
-      "ng3-tour/*": [
-        "dist/ng3-tour/*"
+      "ng-tour/*": [
+        "dist/ng-tour/*"
       ]
     }
   }

@@ -8,6 +8,7 @@ export interface TourI {
   steps: TourStepI[];
   tourOptions?: StepOptionsI;
   withoutLogs?: boolean;
+  tourEvents?: TourEventsI;
 }
 
 export interface TourStepI {
@@ -17,6 +18,7 @@ export interface TourStepI {
   title?: string;
   description?: string;
   options?: StepOptionsI;
+  [propName: string]: any;
 }
 
 export interface StepOptionsI {
@@ -33,9 +35,13 @@ export interface StepOptionsI {
   smoothScroll?: boolean;
   scrollTo?: boolean;
   fixed?: boolean;
+  minWidth?: string; // Step min-width
+  minHeight?: string; // Step min-height
+  maxWidth?: string; // Step max-width
+  maxHeight?: string; // Step max-height
   continueIfTargetAbsent?: boolean; // init next step if target is not found for current one
   stepTargetResize?: number[]; // change size of a 'window' for step target
-  delay?: number; // for the case of the lazy routing
+  delay?: number; // for the case of the lazily loaded or animated routes
 }
 
 export const defaultOptions: StepOptionsI = {
@@ -55,6 +61,10 @@ export const defaultOptions: StepOptionsI = {
   animatedStep: true,
   fixed: false,
   backdrop: true,
+  minWidth: '200px',
+  minHeight: '200px',
+  maxWidth: '30vw',
+  maxHeight: '30vh',
 };
 
 export class StepOptions implements StepOptionsI {
@@ -75,6 +85,10 @@ export class StepOptions implements StepOptionsI {
   stepTargetResize?: number[];
   delay?: number;
   fixed?: boolean;
+  minWidth?: string;
+  minHeight?: string;
+  maxWidth?: string;
+  maxHeight?: string;
   constructor(options: StepOptionsI = defaultOptions) {
     const {
       className,
@@ -89,6 +103,10 @@ export class StepOptions implements StepOptionsI {
       placement,
       arrowToTarget,
       stepTargetResize,
+      maxHeight,
+      maxWidth,
+      minHeight,
+      minWidth,
       delay,
       animatedStep,
       fixed,
@@ -105,6 +123,10 @@ export class StepOptions implements StepOptionsI {
     this.withoutPrev = withoutPrev;
     this.continueIfTargetAbsent = continueIfTargetAbsent;
     this.stepTargetResize = stepTargetResize;
+    this.maxHeight = maxHeight;
+    this.maxWidth = maxWidth;
+    this.minHeight = minHeight;
+    this.minWidth = minWidth;
     this.delay = delay;
     this.animatedStep = animatedStep;
     this.smoothScroll = smoothScroll;
@@ -112,12 +134,29 @@ export class StepOptions implements StepOptionsI {
     this.fixed = fixed;
   }
 }
+export type TourEventI =  (arg: {
+  tourEvent: string,
+  step?: number | string,
+  history?: number[],
+  [propName: string]: any
+}) => void;
 
-export interface TourHandlersI {
-  handlePrev(): void;
-  handleNext(): void;
-  handleClose(): void;
+export interface TourEventsI {
+  tourStart?: TourEventI;
+  tourEnd?: TourEventI;
+  tourBreak?: TourEventI;
+  next?: TourEventI;
+  prev?: TourEventI;
 }
+
+const defaultTourEvent: TourEventI = ({arg}) => {};
+export const TourDefaultEvents = {
+  tourStart: defaultTourEvent,
+  tourEnd: defaultTourEvent,
+  tourBreak: defaultTourEvent,
+  next: defaultTourEvent,
+  prev: defaultTourEvent,
+};
 
 @Injectable()
 export class TourService {
@@ -129,36 +168,18 @@ export class TourService {
   private firstStepOptions: StepOptionsI;
   private withoutLogs = false;
   private presets: StepOptionsI = {};
-  constructor(private router: Router, private readonly targetService: StepTargetService) { }
-
-  private setSteps(tour: TourI): void {
-    const options = new StepOptions({...defaultOptions, ...this.presets, ...tour.tourOptions});
-    this.steps = tour.steps.map((x, i) => {
-      x.index = i;
-      x.options = x.options ? {...options, ...x.options} : options;
-      return x;
-    });
-    if (!this.withoutLogs) {
-      console.log('gn-tour init with steps: ');
-      console.log(this.steps);
-    }
-    this.firstStepOptions = this.steps[0].options;
-  }
-  public setPresets(presets: StepOptionsI): void {
-    this.presets = {...this.presets, ...presets};
+ // private tourStart = TourDefaultEvents.tourStart;
+  private tourBreak = TourDefaultEvents.tourBreak;
+  private tourEnd = TourDefaultEvents.tourEnd;
+  private next = TourDefaultEvents.next;
+  private prev = TourDefaultEvents.prev;
+  constructor(private router: Router, private readonly targetService: StepTargetService) {
+    this.nextStep = this.nextStep.bind(this);
+    this.prevStep = this.prevStep.bind(this);
+    this.stopTour = this.stopTour.bind(this);
   }
 
-  public initStep(step: number): void {
-    const previousStep = this.getHistory() ? this.steps[this.history.slice(-1)[0]] : {route: null};
-    const currentStep = this.steps[step];
-    this.routeChanged = previousStep.route !== currentStep.route;
-    this.history.push(step);
-    if (this.routeChanged) {
-      this.router.navigate([currentStep.route]);
-    }
-    this.currentStep$.next(currentStep.stepName);
-  }
-  validateOptions(tour: TourI): boolean {
+  private validateOptions(tour: TourI): boolean {
     const regExpr = /^top$|^down$|^left$|^right$|^center$/i;
     let isValid = true;
     tour.steps.forEach((step: TourStepI) => {
@@ -170,6 +191,50 @@ export class TourService {
       isValid = regExpr.test(tour.tourOptions.placement);
     }
     return isValid;
+  }
+  private setSteps(tour: TourI): void {
+    const options = new StepOptions({...defaultOptions, ...this.presets, ...tour.tourOptions});
+    this.steps = tour.steps.map((x, i) => {
+      x.index = i;
+      x.options = x.options ? {...options, ...x.options} : options;
+      return x;
+    });
+    if (!this.withoutLogs) {
+      console.log('gn-tour init with steps:');
+      console.log(this.steps);
+    }
+    this.firstStepOptions = this.steps[0].options;
+  }
+  public setPresets(presets: StepOptionsI): void {
+    this.presets = {...this.presets, ...presets};
+  }
+
+  public initStep(step: number): void {
+    const previousStep = this.getHistory() ? this.steps[this.getLastStepIndex()] : {route: null};
+    const currentStep = this.steps[step];
+    this.routeChanged = previousStep.route !== currentStep.route;
+    this.history.push(step);
+    if (this.routeChanged) {
+      this.router.navigate([currentStep.route]);
+    }
+    this.currentStep$.next(currentStep.stepName);
+  }
+  public nextStep() {
+    const step = this.getLastStepIndex() + 1;
+    this.next({tourEvent: 'Init next', step, history: this.history});
+    this.initStep(step);
+  }
+  public prevStep() {
+    const step = this.getLastStepIndex() - 1;
+    this.prev({tourEvent: 'Init prev', step, history: this.history});
+    this.initStep(step);
+  }
+
+  public getLastStepIndex(): number {
+    return this.history.slice(-1)[0];
+  }
+  public getLastStep(): TourStepI {
+    return this.steps[this.getLastStepIndex()];
   }
   public getStepSubject(): Observable<string> {
     return this.currentStep$;
@@ -188,13 +253,19 @@ export class TourService {
     return this.steps.length;
   }
 
-  public setTourStatus(status: boolean): void {
+  private setTourStatus(status: boolean): void {
     this.tourStarted = status;
   }
   public getTourStatus() {
     return this.tourStarted;
   }
   public startTour(tour: TourI) {
+    const {tourBreak, tourStart, tourEnd, next, prev} = {...TourDefaultEvents, ...tour.tourEvents};
+    tourStart({tourEvent: 'Tour is starting', tour});
+    this.tourBreak = tourBreak;
+    this.tourEnd = tourEnd;
+    this.next = next;
+    this.prev = prev;
     if (!this.validateOptions(tour)) {
       throw new Error('Placement option of the ng-tour or one of it step is invalid');
     }
@@ -208,6 +279,13 @@ export class TourService {
   }
 
   public stopTour() {
+    const index = this.getLastStepIndex();
+    const latestStepIndex = this.steps.length - 1;
+    if ( index < latestStepIndex) {
+      this.tourBreak({tourEvent: 'Tour break', step: index, history: this.history});
+    } else if (latestStepIndex === index) {
+      this.tourEnd({tourEvent: 'Tour end', step: index, history: this.history});
+    }
     this.setTourStatus(false);
     this.steps.length = 0;
     this.currentStep$.next(null);

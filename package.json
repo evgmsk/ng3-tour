@@ -1,5 +1,5 @@
 {
-  "name": "ng3-tour",
+  "name": "ng-tour",
   "version": "1.0.0",
   "scripts": {
     "ng": "ng",
@@ -8,7 +8,7 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "pkr": "ng build ng3-tour"
+    "pkr": "ng build ng-tour"
   },
   "description": "",
   "repository": {

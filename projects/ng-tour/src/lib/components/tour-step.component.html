@@ -10,55 +10,55 @@
   <div
     *ngIf="currentStep"
     class="tour-step-modal"
+    [style.max-width]="step.options.maxWidth"
+    [style.max-height]="step.options.maxHeight"
     [style.top.px]="stepModalPosition.top"
     [style.left.px]="stepModalPosition.left"
     [style.bottom.px]="stepModalPosition.bottom"
     [style.right.px]="stepModalPosition.right"
-    [style.max-width]="modalMaxWidth"
-    [style.max-height]="modalMaxHeight"
-    [style.min-width.px]="modalMinWidth"
-    [style.min-height.px]="modalMinHeight"
+    [style.min-width]="step.options.minWidth"
+    [style.min-height]="step.options.minHeight"
     [style.position]="step.options.fixed ? 'fixed' : 'absolute'"
-  >
-    <div *ngIf="!currentStep.options.customTemplate" class="tour-step-modal__content">
+  > 
+    <div *ngIf="!step.options.customTemplate" class="tour-step-modal__content">
       <div class="tour-step-modal__header">
-          <h3 class="tour-step-modal__title">
-          {{currentStep.title}}
+        <h3 class="tour-step-modal__title">
+          {{'title' | tourData}}
         </h3>
-        <button class="tour-step-modal__close-button" type="button" (click)="handleClose()">
+        <button class="tour-step-modal__close-btn" type="button" (click)="onClose($event)">
           &times;
         </button>
       </div>
       <div class="tour-step-modal__body">
         <p class="tour-step-modal__description">
-          {{currentStep.description}}
+          {{'description' | tourData}}
         </p>
       </div>
       <div class="tour-step-modal__footer">
-        <div *ngIf="!currentStep.options.withoutCounter" class="tour-step-modal__counter">
-          {{stepNumber}}/{{total}}
+        <div *ngIf="!('withoutCounter' | tourData)" class="tour-step-modal__counter">
+          {{'index' | tourData}} of {{'total' | tourData}}
         </div>
         <button
-          *ngIf="!currentStep.options.withoutPrev && !first" 
+          *ngIf="!('withoutPrev' | tourData) && !('first' | tourData)" 
           type="button" 
           class="btn btn-default tour-step-modal__prev-button"
-          (click)="handlePrev()"
+          (click)="onPrev($event)"
         >
           {{'Prev'}}
         </button>
         <button
-          *ngIf="!last"
+          *ngIf="!('last' | tourData)"
           type="button"
           class="btn btn-default tour-step-modal__next-button"
-          (click)="handleNext()"          
+          (click)="onNext($event)"          
         >
           {{'Next'}}
         </button>
         <button
-          *ngIf="last"
+          *ngIf="('last' | tourData)"
           type="button"
           class="btn btn-default tour-step-modal__end-button"
-          (click)="handleClose()"
+          (click)="onClose($event)"
         >
           {{'Done'}}
         </button>
@@ -66,6 +66,4 @@
     </div>
     <ng-content></ng-content>
   </div>
-</div>
-
-
+</div>s

@@ -6,7 +6,7 @@ An Angular Tour (Ng-tour) light library is **built entirely** in Angular and all
 
 ## Installation
 
-    npm install --save ng3-tour
+    npm install --save ng-tour
 
 ## Usage 
 
@@ -25,7 +25,7 @@ An Angular Tour (Ng-tour) light library is **built entirely** in Angular and all
     export class AppModule { }
 ```
 
-2. Import if needed the NgTourModule in your Feature Modules:
+2. Import the NgTourModule in your Feature Modules:
 ```
     @NgModule({
         declarations: [FeatureComponent],
@@ -100,6 +100,7 @@ onClick() {
 Name | Required | Type | Destination | Default value
 -----|----|----|------------|--------------
 steps | yes | TourStep[] | this option define Tour Steps and its order| 
+tourEvents | no | TourEvents | this option define event handlers for 'tour start', 'tour break', 'tour end', 'next step', 'prev step' | 
 tourOption | no | TourStepI | Set common options. Could be redefined with Step options
 
 
@@ -129,6 +130,10 @@ animatedStep | no | boolean | If true add classes to control css animation | tru
 fixed | no | boolean | If value equals true position css property of the Step Component and Backdrop Component is set to the 'fixed' | true
 animationDelay | no | number | Required in case of routing with lazy loaded Feature Modules. Delay defined in ms | 500
 targetResize | no | number[] | Change size in px of the Step target window. Number with index 0 define. Number with index 1 if exist define Height differ from the Width | [0]
+minWidth | no | string | Define min-width of the Step modal | '200px'
+minHeight | no | string | Define min-height of the Step modal | '200px'
+maxWidth | no | string | Define max-width of the Step modal | '30vw'
+maxHeight | no | string | Define max-height of the Step modal | '30vh'
 
 ### Services
 
@@ -165,9 +170,23 @@ ngTourStep | yes | The value should be unique string | string
 #### ng-tour-template
 To create custom step modal you can use follow component's methods:
 
-Name | Args |     Description     | Return
+Output | Args |     Description     | 
 -----|------|---------------------|------------
-handleNext |  | call tourService.initStep(with index of the next step) | void
-handlePrev |   | Call tourService.initStep(with index of the previous step) | void
-handleClose | | Call tourService.stopTour | void
+next |  | Call before tourService.initStep(with index of the next step) | 
+prev |   | Call before tourService.initStep(with index of the previous step) |
+break | | Call before tourService.stopTour | 
+done | | Call before tourService.stopTour |
 
+### SCSS Customizing
+You can easily redefine styles of the provided Step template in any scss files importing in style.scss file of your project. 
+
+#### Main selectors
+Selector | Corresponding DOM node
+---------|-------------------------
+.tour-step-modal | Step (including custom template)
+.tour-step-modal__content | provided Step template
+.tour-step-modal__header | provided Step header
+.tour-step-modal__title | provided Step title
+.tour-step-modal__body | provided Step body (include Step description)
+.tour-step-modal__description | provided Step description
+.tour-step-modal__footer | provided Step footer (include Step controls: Next, Prev, Done, Counter)
