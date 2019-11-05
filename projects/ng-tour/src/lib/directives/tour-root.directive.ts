@@ -17,6 +17,7 @@ import {StepTargetService} from '../services/step-target.service';
 import {TourStepComponent} from '../components/tour-step.component';
 import {TourService} from '../services/tour.service';
 
+ // @dynamic
 @Directive({
     selector: '[ngIfTour]',
 })
@@ -33,6 +34,7 @@ export class TourRootDirective implements OnInit, OnDestroy {
         private readonly targetService: StepTargetService,
         private viewContaner: ViewContainerRef,
         private componentFactory: ComponentFactoryResolver,
+        // @dynamic
         @Inject(PLATFORM_ID) platformId: {}) {
         this.isBrowser = isPlatformBrowser(platformId);
         this.modalFactory = this.componentFactory.resolveComponentFactory(TourStepComponent);
