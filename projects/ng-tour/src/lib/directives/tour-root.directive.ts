@@ -1,24 +1,22 @@
 import {
     Directive,
-    Input,
     OnInit,
     Inject,
     PLATFORM_ID,
     OnDestroy,
-    TemplateRef,
+    ElementRef,
     ViewContainerRef,
     ComponentFactoryResolver,
     ComponentFactory
 } from '@angular/core';
 import {isPlatformBrowser} from '@angular/common';
 import {Subject} from 'rxjs';
-import {map, takeUntil} from 'rxjs/operators';
+import {map, takeUntil, subscribeOn} from 'rxjs/operators';
 
 import {StepTargetService} from '../services/step-target.service';
 import {TourStepComponent} from '../components/tour-step.component';
 import {TourService} from '../services/tour.service';
 
-// @dynamic
 @Directive({
     selector: '[ngIfTour]',
 })
@@ -30,12 +28,11 @@ export class TourRootDirective implements OnInit, OnDestroy {
     isBrowser: boolean;
     modalFactory: ComponentFactory<TourStepComponent>;
     constructor(
-        private template: TemplateRef<any>,
+        private elem: ElementRef,
         private readonly tourService: TourService,
         private readonly targetService: StepTargetService,
         private viewContaner: ViewContainerRef,
         private componentFactory: ComponentFactoryResolver,
-        // @dynamic
         @Inject(PLATFORM_ID) platformId: {}) {
         this.isBrowser = isPlatformBrowser(platformId);
         this.modalFactory = this.componentFactory.resolveComponentFactory(TourStepComponent);
@@ -44,10 +41,16 @@ export class TourRootDirective implements OnInit, OnDestroy {
         if (!this.isBrowser) {
             return;
         }
+        const parent = this.elem.nativeElement.parentNode;
+        if (parent.localName !== 'app-root') {
+            console.warn(`You placed ngIfTour directive in ${this.elem.nativeElement.localName} inside ${parent.localName}.
+                Are you sure ${parent.localName} better choice then app-root?`);
+        }
+        const isTourTemplate = [...parent.childNodes].filter((c: Element) => c.localName === 'ng-tour-step-template').length;
+        if (isTourTemplate) {
+            this.customTemplate = true;
+        }
         let componentRef: any;
-        this.viewContaner.createEmbeddedView(this.template);
-        // tslint:disable-next-line:no-string-literal
-        this.customTemplate = this.template['_parentView'].nodes.filter((x: any) => x.instance && x.instance.tourService).length === 2;
         if (this.customTemplate) {
             this.tourService.setPresets({customTemplate: true});
         } else {

@@ -18,7 +18,8 @@ import {TourService} from '../services/tour.service';
 export class TourEventsDirective implements OnInit {
     @Input('tourEvent') eventType: string; // possible values 'next', 'prev', 'break', 'done'
     isBrowser: boolean;
-    @Output() next: EventEmitter<any> = new EventEmitter();
+
+    @Output() next: EventEmitter<{[propName: string]: any}> = new EventEmitter();
     @Output() prev: EventEmitter<any> = new EventEmitter();
     @Output() done: EventEmitter<any> = new EventEmitter();
     @Output() break: EventEmitter<any> = new EventEmitter();
@@ -35,22 +36,38 @@ export class TourEventsDirective implements OnInit {
         }
         if (this.eventType === 'next') {
             this.handler = () => {
-                this.next.emit(this.tourService.getLastStepIndex() + 1);
+                this.next.emit({
+                    tourEvent: 'next',
+                    index: this.tourService.getLastStepIndex() + 1,
+                    history: this.tourService.getHistory()
+                });
                 this.tourService.nextStep();
             };
         }
         if (this.eventType === 'prev') {
             this.handler = () => {
-                this.next.emit(this.tourService.getLastStepIndex() - 1);
+                this.prev.emit({
+                    tourEvent: 'next',
+                    index: this.tourService.getLastStepIndex() - 1,
+                    history: this.tourService.getHistory()
+                });
                 this.tourService.prevStep();
             };
         }
         if (this.eventType === 'close') {
             this.handler = () => {
                 if (this.tourService.getLastStepIndex() + 1 === this.tourService.getTotal()) {
-                    this.done.emit('done');
+                    this.done.emit({
+                        tourEvent: 'done',
+                        index: this.tourService.getLastStepIndex(),
+                        history: this.tourService.getHistory()
+                    });
                 } else {
-                    this.break.emit(this.tourService.getLastStepIndex());
+                    this.break.emit({
+                        tourEvent: 'break',
+                        index: this.tourService.getLastStepIndex(),
+                        history: this.tourService.getHistory()
+                    });
                 }
                 this.tourService.stopTour();
             };

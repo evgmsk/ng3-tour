@@ -42,6 +42,7 @@ export interface StepOptionsI {
   continueIfTargetAbsent?: boolean; // init next step if target is not found for current one
   stepTargetResize?: number[]; // change size of a 'window' for step target
   delay?: number; // for the case of the lazily loaded or animated routes
+  autofocus?: boolean;
 }
 
 export const defaultOptions: StepOptionsI = {
@@ -65,6 +66,7 @@ export const defaultOptions: StepOptionsI = {
   minHeight: '200px',
   maxWidth: '30vw',
   maxHeight: '30vh',
+  autofocus: true,
 };
 
 export class StepOptions implements StepOptionsI {
@@ -89,6 +91,7 @@ export class StepOptions implements StepOptionsI {
   minHeight?: string;
   maxWidth?: string;
   maxHeight?: string;
+  autofocus?: boolean;
   constructor(options: StepOptionsI = defaultOptions) {
     const {
       className,
@@ -111,6 +114,7 @@ export class StepOptions implements StepOptionsI {
       animatedStep,
       fixed,
       backdrop,
+      autofocus,
     } = options;
     this.className = className;
     this.placement = placement;
@@ -132,9 +136,10 @@ export class StepOptions implements StepOptionsI {
     this.smoothScroll = smoothScroll;
     this.scrollTo = scrollTo;
     this.fixed = fixed;
+    this.autofocus = autofocus;
   }
 }
-export type TourEventI =  (arg: {
+export type TourEvent =  (props: {
   tourEvent: string,
   step?: number | string,
   history?: number[],
@@ -142,14 +147,14 @@ export type TourEventI =  (arg: {
 }) => void;
 
 export interface TourEventsI {
-  tourStart?: TourEventI;
-  tourEnd?: TourEventI;
-  tourBreak?: TourEventI;
-  next?: TourEventI;
-  prev?: TourEventI;
+  tourStart?: TourEvent;
+  tourEnd?: TourEvent;
+  tourBreak?: TourEvent;
+  next?: TourEvent;
+  prev?: TourEvent;
 }
 
-const defaultTourEvent: TourEventI = ({arg}) => {};
+export const defaultTourEvent: TourEvent = (props) => {};
 export const TourDefaultEvents = {
   tourStart: defaultTourEvent,
   tourEnd: defaultTourEvent,
@@ -210,7 +215,7 @@ export class TourService {
   }
 
   public initStep(step: number): void {
-    const previousStep = this.getHistory() ? this.steps[this.getLastStepIndex()] : {route: null};
+    const previousStep = this.history.length ? this.steps[this.getLastStepIndex()] : {route: null};
     const currentStep = this.steps[step];
     this.routeChanged = previousStep.route !== currentStep.route;
     this.history.push(step);
@@ -275,7 +280,7 @@ export class TourService {
     this.initStep(0);
   }
   public getHistory() {
-    return this.history.length;
+    return this.history;
   }
 
   public stopTour() {

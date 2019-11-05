@@ -41,7 +41,7 @@
         <button
           *ngIf="!('withoutPrev' | tourData) && !('first' | tourData)" 
           type="button" 
-          class="btn btn-default tour-step-modal__prev-button"
+          class="btn prev-btn"
           (click)="onPrev($event)"
         >
           {{'Prev'}}
@@ -49,7 +49,7 @@
         <button
           *ngIf="!('last' | tourData)"
           type="button"
-          class="btn btn-default tour-step-modal__next-button"
+          class="btn next-btn"
           (click)="onNext($event)"          
         >
           {{'Next'}}
@@ -57,7 +57,7 @@
         <button
           *ngIf="('last' | tourData)"
           type="button"
-          class="btn btn-default tour-step-modal__end-button"
+          class="btn end-btn"
           (click)="onClose($event)"
         >
           {{'Done'}}
@@ -66,4 +66,4 @@
     </div>
     <ng-content></ng-content>
   </div>
-</div>s
+</div>
