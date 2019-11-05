@@ -19,6 +19,13 @@ import {
 } from '../services/tour.service';
 import {StepSizeI, StepTargetService} from '../services/step-target.service';
 
+
+export interface StepEventsI {
+  onNext($event: Event): void;
+  onPrev($event: Event): void;
+  onClose($event: Event): void;
+}
+
 // @dynamic
 @Component({
   selector: 'ng-tour-step-template',
@@ -27,7 +34,7 @@ import {StepSizeI, StepTargetService} from '../services/step-target.service';
   encapsulation: ViewEncapsulation.None,
 })
 
-export class TourStepComponent implements OnInit, OnDestroy {
+export class TourStepComponent implements OnInit, OnDestroy, StepEventsI {
   class: string;
   targetElement: Element;
   target: StepSizeI;

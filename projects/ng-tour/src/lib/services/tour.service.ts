@@ -143,7 +143,7 @@ export type TourEvent =  (props: {
   tourEvent: string,
   step?: number | string,
   history?: number[],
-  [propName: string]: any
+  tour?: TourI,
 }) => void;
 
 export interface TourEventsI {
@@ -266,7 +266,7 @@ export class TourService {
   }
   public startTour(tour: TourI) {
     const {tourBreak, tourStart, tourEnd, next, prev} = {...TourDefaultEvents, ...tour.tourEvents};
-    tourStart({tourEvent: 'Tour is starting', tour});
+    tourStart({tourEvent: 'Tour start', tour});
     this.tourBreak = tourBreak;
     this.tourEnd = tourEnd;
     this.next = next;

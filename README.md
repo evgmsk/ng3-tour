@@ -43,14 +43,13 @@ An Angular Tour (Ng-tour) light library is **built entirely** in Angular and all
     <route-outlet ngIfTour></route-outlet>
 ```
 
-
 5. Mark your target HTML elements with the **ngTourStep** directive with a unique name.
 ```
     <div ngTourStep="first">...</div>
     <span ngTourStep="second">...</span>
 ```
 
-5. Inject NgTourService in your Component. Good Choice is Component where Tour is being started.
+5. Inject NgTourService in your Component (where Tour is being started).
 
 ```
 @Component({
@@ -79,16 +78,16 @@ const tour = {
             route: "about",
             title: "My second feature name",
             description: "My second feature description",
-            options: stepPlacement: 'top'}
+            options:{placement: 'top', smoothScroll: true*}
         }
     ],
     tourOptions: {
         backdrop: false,
-        stepPlacement: 'down'
+        placement: 'down'
     }
 }
 
-Keep in mind if you implement your own Step template, you can use your own Step properties besides required ('stepName' and 'route')
+**Keep in mind if you implement your own Step template, you can use your own Step properties besides required ('stepName' and 'route')**
 
 @Component({...
 
@@ -115,7 +114,7 @@ If you want to use tour own Step template wrap it `<ng-tour-step-template>` and 
                 <h3 class="custom-step__title">
                     {{'title' | tourData}}
                 </h3>
-                <button class="tour-step-modal__close-btn" type="button" tourEvent="close" (break)="onBreak($event)" (done)="onDone($event)">
+                <button class="tour-step-modal__close-btn" type="button" stepEvent="close" (break)="onBreak($event)" (done)="onDone($event)">
                     &times;
                 </button>
             </div>
@@ -131,14 +130,14 @@ If you want to use tour own Step template wrap it `<ng-tour-step-template>` and 
                 <button
                     *ngIf="!('withoutPrev' | tourData) && !('first' | tourData)" 
                     type="button" 
-                    tourEvent="prev"
+                    stepEvent="prev"
                 >
                     Prev
                 </button>
                 <button
                     *ngIf="!('last' | tourData)"
                     type="button"
-                    tourEvent="next"  
+                    stepEvent="next"  
                     (next)="onNext($event)"
                 >
                     Next
@@ -146,7 +145,7 @@ If you want to use tour own Step template wrap it `<ng-tour-step-template>` and 
                 <button
                     *ngIf="('last' | tourData)"
                     type="button"
-                    tourEvent="close"
+                    stepEvent="close"
                     (done)="onDone($event)"
                 >
                     Done
@@ -160,47 +159,23 @@ Keep in mind if you use **`<ng-tour-step-template>`** and **`ngIfTour`** at the 
 
 ## API reference
 
-### Interfaces and Types
-
-```
-interface TourI {
-  steps: TourStepI[];
-  tourOptions?: StepOptionsI;
-  tourEvents?: TourEventsI;
-}
-
-interface TourStepI {
-  stepName: string;
-  route?: string;
-  index?: number;
-  title?: string;
-  description?: string;
-  options?: StepOptionsI;
-  [propName: string]: any;
-}
-
-type TourEvent =  (props: {
-  tourEvent: string,
-  step?: number | string,
-  history?: number[],
-  [propName: string]: any
-}) => void;
-
-export interface TourEventsI {
-  tourStart?: TourEvent;
-  tourEnd?: TourEvent;
-  tourBreak?: TourEvent;
-  next?: TourEvent;
-  prev?: TourEvent;
-}
-```
-
 ### Tour Properties
 Name | Required | Type | Destination | Default value
 -----|----|----|------------|--------------
 steps | yes | TourStep[] | This option define Tour Steps and its order | 
 tourEvents | no | TourEventsI | define event handlers for 'tour start', 'tour break', 'tour end', 'next step', 'prev step' | 
 tourOption | no | TourStepI | Set common options. Could be redefined with Step options
+
+### Tour Events
+These events are functions witch is called within corresponded tourService methods. You can pass your own implementation of these functions within tourEvent property for example to collect some statistical data about user behavior. Keep in mind Tour Events unlike Step Events could fire without user activity in case continueIfTargetAbsent property is set to true (default value).
+
+Name | Required | Props | Destination | 
+-----|----|----|------------|----
+tourStart | no | {tourEvent: string, tour?: TourI} | Add logic executed before the Tour will be started | 
+tourBreak | no | {tourEvent: string, step?: number, history?: number[]} | Add logic executing before the Tour will be stoped untimely
+tourEnd | no | {tourEvent: string, step?: number, history?: number[]} | Add logic executing before the Tour will be stopped after finishing (latest step was visited)
+next | no | {tourEvent: string, step?: number, history?: number[]} | Add logic executing before the next step will be initiated
+prev | no | {tourEvent: string, step?: number, history?: number[]} | Add logic executing before the previous step will be initiated
 
 
 ### Step Properties (StepOptions)
@@ -211,36 +186,36 @@ route | yes | string | define route corresponded to the Step |
 index | no | number |  'Index' value is set by TourService service according to the position of the Step in the Steps array | 
 title | no | string | Set title of the current Step | ""
 description | no | string | Set description of the current Step | ""
-options | no | StepOptionsI | to customize separate Step | described below
+options | no | StepOptionsI | To customize separate Step | described below
 options: | | | |
-className | no | string | set custom class to step component | ""
+className | no | string | Set custom class to the Step component | ""
 themeColor| no | string | Define theme color | 'rgb(20, 60, 60)'
 backdrop | no | boolean | Add backdrop if option set true | true
 opacity| no | number | Define the backdrop opacity | .6
 placement | no | string |  This option define position of step modal relative to target. Possible values: 'down', 'top', 'left', 'right', 'center' **( case no matter )** | "Down"
-customTemplate | no | boolean | This option has by default value true if was used `<ng-tour-step-template>`. (Value could be reset within Tour options or Step options). Otherwise, the default value of the option will be false. | true/false
-withoutCounter | no | boolean |If true remove counter including a number of the step and total number of steps from the Step template | false
+customTemplate | no | boolean | This option has by default value true if was used `<ng-tour-step-template>` and **ngIfTour** directive within same Component. (Value could be reset within Tour options or Step options). Otherwise, the default value of the option will be false. | true/false
+withoutCounter | no | boolean | If true remove counter including a number of the step and total number of steps from the Step template | false
 withoutPrev | no | boolean |If true remove 'Prev' control button from the Step template | false
 arrowToTarget | no | boolean | If true add arrow in direction corresponded location of the Step target  | true
-scrollTo | no | boolean | If true scroll window to show Step target add modal (popup) | true
+scrollTo | no | boolean | If value equals true, the window is scrolled to show Step target and modal (popup) | true
 scrollSmooth | no | boolean | If true  option behavior of the window scroll is set to smooth | false
 continueIfTargetAbsent | no | boolean | If true and the Step target is absent will initialize the next Step | true
 animatedStep | no | boolean | If true add classes to control css animation | true
-fixed | no | boolean | If value equals true position css property of the Step Component and Backdrop Component is set to the 'fixed' | true
+fixed | no | boolean | If value equals true position css property of the Step Component and Backdrop Component is set to the 'fixed', otherwise 'absolute' | false
 animationDelay | no | number | Required in case of routing with lazy loaded Feature Modules. Delay defined in ms | 500
-targetResize | no | number[] | Change size in px of the Step target window. Number with index 0 define. Number with index 1 if exist define Height differ from the Width | [0]
+targetResize | no | number[] | Change size in px of the Step target window. Number with index 0 define Width. Number with index 1 if exist define Height differ from the Width | [0]
 minWidth | no | string | Define min-width of the Step modal | '200px'
 minHeight | no | string | Define min-height of the Step modal | '200px'
-maxWidth | no | string | Define max-width of the Step modal | '30vw'
-maxHeight | no | string | Define max-height of the Step modal | '30vh'
+maxWidth | no | string | Define max-width of the Step modal | '400px'
+maxHeight | no | string | Define max-height of the Step modal | '400px'
 autofocus | no | boolean | If true 'next' and 'done' buttons obtain focus | true
 
 ### Services
 
-#### TourService: 
+#### TourService main methods: 
 Name | Args |  Description | Return
 -----|------|---------------------|--------
-startTour | tour: TourI | start Tour (The only necessary to use lib) | void |
+startTour | tour: TourI | start Tour (The only necessary to use this lib) | void |
 prevStep | | Call initStep with previous stepName | void 
 nextStep | | Call initStep with next stepName | void 
 stopTour | | stop Tour | void 
@@ -249,31 +224,31 @@ stopTour | | stop Tour | void
 ### Directives 
 
 #### ngIfTour 
-This directive is similar to a structural one if it is used solo without `<ng-tour-step-template>`. In this case, **`ngIfTour`** adds provided `<ng-tour-step-template>` to the DOM  after the Tour is started and removes it after the Tour is finished. If **`ngIfTour`** is used along with **`<ng-tour-step-template>`** (no matter which element was marked with directive **`<ng-tour-step-template>`** or some other) it make only one thing it set 'customTemplate' property to true.
+This directive is similar to a structural one if it is used solo without `<ng-tour-step-template>`. In this case, **`ngIfTour`** adds provided `Step template` to the DOM  after the Tour is started and removes it after the Tour is stoped. If **`ngIfTour`** is used along with **`<ng-tour-step-template>`** (no matter which element was marked with directive **`<ng-tour-step-template>`** or some other) it make only one thing it set 'customTemplate' property to true.
 
 #### ngTourStep 
 @Input	| Required | Description | Values/Type
 --------|----------|-------------|-------------
 ngTourStep | yes | The value should be unique string | string
 
-#### tourEvent
-This directive bind listeners to Step's controls.
+#### stepEvent
+This directive binds listeners (with corresponded Tour methods) to Step's controls and emits corresponded events. It may come in handy if you want **to master your own Step template**.
 @Input	| Required | Destination
 --------|----------|-------|-------------
-next | required one of three options | Implement handler with nextStep method
-prev | | Implement handler with prevStep method 
-close | | Implement handler with stopTour method 
+stepEvent | required | Possible values are 'next' , 'prev' and 'close'. Value predefines which handler will be implemented for the click event. 
 
 @Output	| Props | Destination
 --------|-------|-------------
-next |  | 
-prev | | | Implement handler with prevStep method 
-break | | Implement handler with stopTour method 
-done |
+next | {tourEvent: string, step?: number, history?: number[]} | Emit 'next' event with described props. The destination is the same as tourEvents have
+prev | {tourEvent: string, step?: number, history?: number[]} | Emit 'prev' event with described props.
+break | {tourEvent: string, step?: number, history?: number[]} | Emit 'break' event with described props.
+done | {tourEvent: string, step?: number, history?: number[]}| Emit 'done' event with described props.
 
 ### Pipes
 
 #### tourData
+This pipe provides a possibility to get a value of any existed Step properties and some others described below **to master your own Step template**.
+
 Value	| Description | Return values/Type
 --------|-------------|-------------------
 Tour's properies | | | 
@@ -285,21 +260,21 @@ Step's properties: | | |
 'title' | Title of the Step | string
 'description' | Description of the Step | string 
 'index' | Index of the Step | string
-Step's options properties | | |
-Tou can bind all props defined in StepOptionsI | | |
-**Keep in mind you can add bind using tourData additional properties**
+Any Step's options properties | | |
+
+**Keep in mind you can add to Step config and bind using tourData your own properties**
 
 ### Components 
 
 #### ng-tour-template
 To add some logic :
 
-Output | Args |     Description     
+Output | Props |     Description     
 -----|------|---------------------
-next |  | Call before tourService.initStep(with index of the next step)  
-prev |   | Call before tourService.initStep(with index of the previous step)
-break | | Call before tourService.stopTour 
-done | | Call before tourService.stopTour 
+next | {tourEvent: string, step?: number, history?: number[]} | Emit 'next' event with described props. The destination is the same as tourEvents have  
+prev | {tourEvent: string, step?: number, history?: number[]}  | Emit 'prev' event with described props.
+break | {tourEvent: string, step?: number, history?: number[]} | Emit 'break' event with described props.
+done | {tourEvent: string, step?: number, history?: number[]} | Emit 'done' event with described props.
 
 ### SCSS Customizing
 You can easily redefine styles of the provided Step template in any scss files importing in style.scss file of your project. 
@@ -307,10 +282,15 @@ You can easily redefine styles of the provided Step template in any scss files i
 #### Main selectors
 Selector | Corresponding DOM node
 ---------|-------------------------
-.tour-step-modal | Step (including custom template)
+.tour-step-modal | Step (includes provided template and custom template)
 .tour-step-modal__content | provided Step template
-.tour-step-modal__header | provided Step header
+.tour-step-modal__header | provided Step header (includes title and Close control)
+.close-btn | Close control
 .tour-step-modal__title | provided Step title
-.tour-step-modal__body | provided Step body (include Step description)
+.tour-step-modal__body | provided Step body (includes Step description)
 .tour-step-modal__description | provided Step description
-.tour-step-modal__footer | provided Step footer (include Step controls: Next, Prev, Done, Counter)
+.tour-step-modal__footer | provided Step footer (includes Step controls: Next, Prev, Done, Counter)
+.tour-step-modal__counter | Counter
+.next-btn | Next control
+.prev-btn | Prev control
+.done-btn | Done control

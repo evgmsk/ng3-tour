@@ -13,10 +13,10 @@ import {isPlatformBrowser} from '@angular/common';
 import {TourService} from '../services/tour.service';
 // @dynamic
 @Directive({
-    selector: '[tourEvent]',
+    selector: '[stepEvent]',
 })
-export class TourEventsDirective implements OnInit {
-    @Input('tourEvent') eventType: string; // possible values 'next', 'prev', 'break', 'done'
+export class StepEventsDirective implements OnInit {
+    @Input('stepEvent') eventType: string; // possible values 'next', 'prev', 'close'
     isBrowser: boolean;
 
     @Output() next: EventEmitter<{[propName: string]: any}> = new EventEmitter();

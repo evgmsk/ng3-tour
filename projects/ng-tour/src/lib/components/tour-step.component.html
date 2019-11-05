@@ -19,6 +19,7 @@
     [style.min-width]="step.options.minWidth"
     [style.min-height]="step.options.minHeight"
     [style.position]="step.options.fixed ? 'fixed' : 'absolute'"
+    [style.color]="step.options.themeColor"
   > 
     <div *ngIf="!step.options.customTemplate" class="tour-step-modal__content">
       <div class="tour-step-modal__header">
@@ -57,7 +58,7 @@
         <button
           *ngIf="('last' | tourData)"
           type="button"
-          class="btn end-btn"
+          class="btn done-btn"
           (click)="onClose($event)"
         >
           {{'Done'}}
