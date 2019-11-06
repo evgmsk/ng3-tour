@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import {isPlatformBrowser} from '@angular/common';
 import {Subject} from 'rxjs';
-import {map, takeUntil, subscribeOn} from 'rxjs/operators';
+import {map, takeUntil} from 'rxjs/operators';
 
 import {StepTargetService} from '../services/step-target.service';
 import {TourStepComponent} from '../components/tour-step.component';

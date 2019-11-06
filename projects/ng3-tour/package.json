@@ -1,0 +1,12 @@
+{
+  "name": "ng3-tour",
+  "version": "0.0.1",
+  "peerDependencies": {
+    "@angular/core": ">=4.0.0",
+        "@angular/common": ">=4.0.0",
+        "@angular/compiler": ">=4.0.0",
+        "@angular/router": ">=4.0.0",
+        "rxjs": ">=5.0.0",
+        "zone.js": ">=0.8.12"
+  }
+}

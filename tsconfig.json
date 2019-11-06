@@ -2,14 +2,16 @@
   "compileOnSave": false,
   "compilerOptions": {
     "baseUrl": "./",
+    "downlevelIteration": true,
+    "importHelpers": true,
     "outDir": "./dist/out-tsc",
     "sourceMap": true,
     "declaration": false,
-    "module": "es2015",
+    "module": "esnext",
     "moduleResolution": "node",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "target": "es5",
+    "target": "es2015",
     "typeRoots": [
       "node_modules/@types"
     ],
@@ -18,11 +20,11 @@
       "dom"
     ],
     "paths": {
-      "ng-tour": [
-        "dist/ng-tour"
+      "ng3-tour": [
+        "dist/ng3-tour"
       ],
-      "ng-tour/*": [
-        "dist/ng-tour/*"
+      "ng3-tour/*": [
+        "dist/ng3-tour/*"
       ]
     }
   }

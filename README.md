@@ -1,12 +1,12 @@
-# Ng-Tour
+# ng3-Tour
 
-An Angular Tour (Ng-tour) light library is **built entirely** in Angular and allows you easily master guide for your users through your site showing them all the sections and features including **lazily loaded**.
+An Angular Tour (ng3-tour) light library is **built entirely** in Angular and allows you easily master guide for your users through your site showing them all the sections and features including **lazily loaded**.
 
 **For Angular 2+ (2, 4, 5, 6, 7, 8)**
 
 ## Installation
 
-    npm install --save ng-tour
+    npm install --save ng3-tour
 
 ## Usage 
 
@@ -269,7 +269,7 @@ Any Step's options properties | | |
 
 ### Components 
 
-#### ng-tour-template
+#### ng-tour-step-template
 To add some logic :
 
 Output | Props |     Description     
@@ -288,12 +288,13 @@ Selector | Corresponding DOM node
 .tour-step-modal | Step (includes provided template and custom template)
 .tour-step-modal__content | provided Step template
 .tour-step-modal__header | provided Step header (includes title and Close control)
-.close-btn | Close control
+.tour-btn-close | Close control
 .tour-step-modal__title | provided Step title
 .tour-step-modal__body | provided Step body (includes Step description)
 .tour-step-modal__description | provided Step description
 .tour-step-modal__footer | provided Step footer (includes Step controls: Next, Prev, Done, Counter)
 .tour-step-modal__counter | Counter
-.next-btn | Next control
-.prev-btn | Prev control
-.done-btn | Done control
+.tour-btn-next | Next control
+.tour-btn-prev | Prev control
+.tour-btn-done | Done control
+.tour-btn | Common selector for footer controls

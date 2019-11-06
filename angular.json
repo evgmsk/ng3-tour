@@ -3,33 +3,33 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "ng-tour": {
-      "root": "projects/ng-tour",
-      "sourceRoot": "projects/ng-tour/src",
+    "ng3-tour": {
+      "root": "projects/ng3-tour",
+      "sourceRoot": "projects/ng3-tour/src",
       "projectType": "library",
       "prefix": "lib",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
-            "tsConfig": "projects/ng-tour/tsconfig.lib.json",
-            "project": "projects/ng-tour/ng-package.json"
+            "tsConfig": "projects/ng3-tour/tsconfig.lib.json",
+            "project": "projects/ng3-tour/ng-package.json"
           }
         },
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/ng-tour/src/test.ts",
-            "tsConfig": "projects/ng-tour/tsconfig.spec.json",
-            "karmaConfig": "projects/ng-tour/karma.conf.js"
+            "main": "projects/ng3-tour/src/test.ts",
+            "tsConfig": "projects/ng3-tour/tsconfig.spec.json",
+            "karmaConfig": "projects/ng3-tour/karma.conf.js"
           }
         },
         "lint": {
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
             "tsConfig": [
-              "projects/ng-tour/tsconfig.lib.json",
-              "projects/ng-tour/tsconfig.spec.json"
+              "projects/ng3-tour/tsconfig.lib.json",
+              "projects/ng3-tour/tsconfig.spec.json"
             ],
             "exclude": [
               "**/node_modules/**"
@@ -39,5 +39,5 @@
       }
     }
   },
-  "defaultProject": "ng-tour"
+  "defaultProject": "ng3-tour"
 }

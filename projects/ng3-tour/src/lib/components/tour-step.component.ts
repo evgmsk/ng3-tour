@@ -184,8 +184,8 @@ export class TourStepComponent implements OnInit, OnDestroy, StepEventsI {
     }
   }
   private setFocus(modal: Element) {
-    const nextBtn = modal.querySelector('.next-btn') as HTMLElement;
-    const endBtn = modal.querySelector('.end-btn') as HTMLElement;
+    const nextBtn = modal.querySelector('.btn-next') as HTMLElement;
+    const endBtn = modal.querySelector('.btn-end') as HTMLElement;
     if (nextBtn) {
       nextBtn.focus();
     } else if (endBtn) {
