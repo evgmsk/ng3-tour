@@ -5,6 +5,7 @@
     [stepBackSize]="target"
     [position]="step.options.fixed ? 'fixed' : 'absolute'"
     [targetBackground]="targetBackground"
+    [opacity]="step.options.opacity"
   >
   </ng-tour-step-back>
   <div
@@ -26,7 +27,7 @@
         <h3 class="tour-step-modal__title">
           {{'title' | tourData}}
         </h3>
-        <button class="tour-step-modal__close-btn" type="button" (click)="onClose($event)">
+        <button class="close-btn" type="button" (click)="onClose($event)">
           &times;
         </button>
       </div>

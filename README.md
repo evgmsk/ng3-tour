@@ -122,6 +122,9 @@ If you want to use tour own Step template wrap it `<ng-tour-step-template>` and 
                 <p class="custom-step__description">
                     {{'description' | tourData}}
                 </p>
+                <p *ngIf="('index' | tourData)===2" class="custom-step__props">
+                    StepName of this step is {{'stepName' | tourData}}
+                </p>
             </div>
             <div class="custom-step__footer">
                 <div *ngIf="!('withoutCounter' | tourData)">
@@ -259,10 +262,10 @@ Tour's properies | | |
 Step's properties: | | | 
 'title' | Title of the Step | string
 'description' | Description of the Step | string 
-'index' | Index of the Step | string
+'index' | The returned value is equal the index of the Step **increased by 1** | string
 Any Step's options properties | | |
 
-**Keep in mind you can add to Step config and bind using tourData your own properties**
+**Keep in mind you can add to the Step Config your own properties and then bind with your custom  Step template using stepData **
 
 ### Components 
 

@@ -92,12 +92,14 @@ export class TourStepComponent implements OnInit, OnDestroy, StepEventsI {
     this.tourService.getStepSubject().pipe(
       takeUntil(this.onDestroy),
       map(step => {
-        this.currentStep = null;
         if (!step) {
+          this.currentStep = null;
           return step;
         }
+        const {themeColor} = (this.currentStep && this.currentStep.options) || this.tourService.getFirstStepOptions();
+        this.currentStep = null;
         this.resetClasses();
-        const {themeColor, delay} = this.tourService.getStepByName(step).options;
+        const {delay} = this.tourService.getStepByName(step).options;
         this.targetBackground = themeColor;
         if (this.tourService.isRouteChanged()) {
           this.timeouts[this.timeouts.length] = setTimeout(() => this.checkTarget(step), delay + 100);
@@ -130,7 +132,6 @@ export class TourStepComponent implements OnInit, OnDestroy, StepEventsI {
       }
     }
   }
-
   private resetClasses(): void {
     const step = this.currentStep;
     const source = (step && step.options) || this.tourService.getFirstStepOptions();
@@ -141,7 +142,6 @@ export class TourStepComponent implements OnInit, OnDestroy, StepEventsI {
       : (step ? '' : 'fade-on');
     this.class = `${arrowClass} ${className} pos-${placement} ${animationClass}`.trim();
   }
-
   private saveTarget(target: Element): void {
     this.target = this.stepTargetService.resizeTarget(
     this.stepTargetService.getSizeAndPosition(target), this.currentStep.options.stepTargetResize);
@@ -177,19 +177,21 @@ export class TourStepComponent implements OnInit, OnDestroy, StepEventsI {
       };
     }
     if (this.currentStep.options.autofocus) {
-      const nextBtn = modal.querySelector('.next-btn') as HTMLElement;
-      const endBtn = modal.querySelector('.end-btn') as HTMLElement;
-      if (nextBtn) {
-        nextBtn.focus();
-      } else if (endBtn) {
-        endBtn.focus();
-      }
+      this.setFocus(modal);
     }
     if (scrollTo) {
       this.scrollTo();
     }
   }
-
+  private setFocus(modal: Element) {
+    const nextBtn = modal.querySelector('.next-btn') as HTMLElement;
+    const endBtn = modal.querySelector('.end-btn') as HTMLElement;
+    if (nextBtn) {
+      nextBtn.focus();
+    } else if (endBtn) {
+      endBtn.focus();
+    }
+  }
   private scrollTo() {
     const {placement, fixed} = this.currentStep.options;
     const left = this.target.left;
@@ -202,18 +204,34 @@ export class TourStepComponent implements OnInit, OnDestroy, StepEventsI {
     }
   }
   public onNext(event: Event) {
-    this.next.emit(this.tourService.getLastStepIndex() + 1);
+    this.next.emit({
+      stepEvent: 'next',
+      index: this.tourService.getLastStepIndex() + 1,
+      history: this.tourService.getHistory(),
+    });
     this.tourService.nextStep();
   }
   public onPrev(event: Event) {
-    this.prev.emit(this.tourService.getLastStepIndex() - 1);
+    this.prev.emit({
+      stepEvent: 'prev',
+      index: this.tourService.getLastStepIndex() - 1,
+      history: this.tourService.getHistory(),
+    });
     this.tourService.prevStep();
   }
   public onClose(event: Event) {
     if (this.tourService.getLastStepIndex() !== this.tourService.getTotal() - 1) {
-      this.break.emit(this.tourService.getLastStepIndex());
+      this.break.emit({
+        stepEvent: 'break',
+        index: this.tourService.getLastStepIndex(),
+        history: this.tourService.getHistory(),
+      });
     } else {
-      this.done.emit('done');
+      this.done.emit({
+        stepEvent: 'done',
+        index: this.tourService.getLastStepIndex(),
+        history: this.tourService.getHistory(),
+      });
     }
     this.tourService.stopTour();
   }

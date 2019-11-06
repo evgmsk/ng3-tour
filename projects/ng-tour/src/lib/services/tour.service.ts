@@ -62,10 +62,10 @@ export const defaultOptions: StepOptionsI = {
   animatedStep: true,
   fixed: false,
   backdrop: true,
-  minWidth: '200px',
-  minHeight: '200px',
-  maxWidth: '30vw',
-  maxHeight: '30vh',
+  minWidth: '150px',
+  minHeight: '150px',
+  maxWidth: '400px',
+  maxHeight: '400px',
   autofocus: true,
 };
 
@@ -79,7 +79,6 @@ export class StepOptions implements StepOptionsI {
   placement: string;
   arrowToTarget?: boolean;
   backdrop?: boolean;
-  backdropColor?: string;
   animatedStep?: boolean;
   smoothScroll?: boolean;
   scrollTo?: boolean;
@@ -170,7 +169,6 @@ export class TourService {
   private currentStep$ = new BehaviorSubject<any>(null);
   private history = [];
   private routeChanged = false;
-  private firstStepOptions: StepOptionsI;
   private withoutLogs = false;
   private presets: StepOptionsI = {};
  // private tourStart = TourDefaultEvents.tourStart;
@@ -208,7 +206,6 @@ export class TourService {
       console.log('gn-tour init with steps:');
       console.log(this.steps);
     }
-    this.firstStepOptions = this.steps[0].options;
   }
   public setPresets(presets: StepOptionsI): void {
     this.presets = {...this.presets, ...presets};
@@ -252,7 +249,7 @@ export class TourService {
     return this.routeChanged;
   }
   public getFirstStepOptions() {
-    return this.firstStepOptions;
+    return this.steps[0].options;
   }
   public getTotal(): number {
     return this.steps.length;
