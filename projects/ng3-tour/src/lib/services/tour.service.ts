@@ -1,4 +1,4 @@
-import {Injectable} from '@angular/core';
+import {Injectable, isDevMode} from '@angular/core';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {Router} from '@angular/router';
 
@@ -15,10 +15,36 @@ export interface TourStepI {
   stepName: string;
   route?: string;
   index?: number;
-  title?: string;
-  description?: string;
+  title?: string | {[propName: string]: any};
+  description?: string | {[propName: string]: any};
   options?: StepOptionsI;
+  ctrlBtns?: CtrlBtnsI;
   [propName: string]: any;
+}
+
+export interface CtrlBtnsI {
+  prev?: {[propsName: string]: any};
+  next?: {[propsName: string]: any};
+  done?: {[propsName: string]: any};
+  [propsName: string]: any;
+}
+
+export const defaultCtrlBtns = {
+  done: {
+   'en-EN': 'done',
+   'ru-RU': 'закр',
+   'fr-FR': 'fini',
+  },
+  prev: {
+    'en-EN': 'prev',
+    'ru-RU': 'пред',
+    'fr-FR': 'préc'
+  },
+  next: {
+    'en-EN': 'next',
+    'ru-RU': 'след',
+    'fr-FR': 'proch',
+  },
 }
 
 export interface StepOptionsI {
@@ -43,6 +69,7 @@ export interface StepOptionsI {
   stepTargetResize?: number[]; // change size of a 'window' for step target
   delay?: number; // for the case of the lazily loaded or animated routes
   autofocus?: boolean;
+  i18nBtn?: CtrlBtnsI;
 }
 
 export const defaultOptions: StepOptionsI = {
@@ -166,16 +193,16 @@ export const TourDefaultEvents = {
 export class TourService {
   private steps: TourStepI[];
   private tourStarted = false;
-  private currentStep$ = new BehaviorSubject<any>(null);
+  private stepsStream$ = new BehaviorSubject<any>(null);
   private history = [];
   private routeChanged = false;
-  private withoutLogs = false;
   private presets: StepOptionsI = {};
  // private tourStart = TourDefaultEvents.tourStart;
   private tourBreak = TourDefaultEvents.tourBreak;
   private tourEnd = TourDefaultEvents.tourEnd;
   private next = TourDefaultEvents.next;
   private prev = TourDefaultEvents.prev;
+  private lang = navigator.language;
   constructor(private router: Router, private readonly targetService: StepTargetService) {
     this.nextStep = this.nextStep.bind(this);
     this.prevStep = this.prevStep.bind(this);
@@ -199,62 +226,90 @@ export class TourService {
     const options = new StepOptions({...defaultOptions, ...this.presets, ...tour.tourOptions});
     this.steps = tour.steps.map((x, i) => {
       x.index = i;
+      if (x.description && typeof x.description === 'object') {
+        x.description = this.defineLocalName(x.description);
+      }
+      if (x.title && typeof x.title === 'object') {
+        x.title = this.defineLocalName(x.title)
+      }
       x.options = x.options ? {...options, ...x.options} : options;
+      x.total = tour.steps.length;
+      x.btnCtrls = this.defineLocalBtnNames(x.btnCtrls || defaultCtrlBtns)
       return x;
     });
-    if (!this.withoutLogs) {
-      console.log('gn-tour init with steps:');
+    if (isDevMode()) {
+      console.log('mode: ', isDevMode())
+      console.log('ng3-tour is initiated with steps:');
       console.log(this.steps);
     }
+  }
+
+  private defineLocalName(prop: any): string {
+    if (prop.hasOwnProperty(this.lang)) return prop[this.lang];
+    if(prop.hasOwnProperty('en-EN')) return prop['en-EN'];
+    const res = Object.values(prop)[0];
+    if (typeof res === 'string') return res;
+    console.error(`Tour configuration error with ${JSON.stringify(prop)}`)
+    return 'Error'
+  }
+  private defineLocalBtnNames(btns: CtrlBtnsI): CtrlBtnsI {
+    const btnCtrls = {};
+    for (let prop in btns) {
+      if (btns.hasOwnProperty(prop)) {
+        if (typeof btns[prop] === 'string') {
+          btnCtrls[prop] = btns[prop];
+        } else if (typeof btns[prop] === 'object' && this.lang in btns[prop]) {
+          btnCtrls[prop] = btns[prop][this.lang]
+        } else {
+          const res = Object.values(prop)[0];
+          if (typeof res === 'string') {
+            btnCtrls[prop] = res;
+          } else {
+            console.error(`Tour configuration error with ${JSON.stringify(btns)}`);
+            btnCtrls[prop] = 'Error'
+          }  
+        }
+      }
+    }
+    return btnCtrls;
+  }
+  private initStep(step: number): void {
+    const previousStep = this.history.length ? this.getLastStep() : {route: null};
+    const newtStep = this.steps[step];
+    this.routeChanged = previousStep.route !== newtStep.route;
+    this.history.push(step);
+    if (newtStep.route && this.routeChanged) {
+      this.router.navigate([newtStep.route]);
+    }
+    this.stepsStream$.next(newtStep.stepName);
+  }
+
+  public getHistory() {
+    return this.history;
   }
   public setPresets(presets: StepOptionsI): void {
     this.presets = {...this.presets, ...presets};
   }
-
-  public initStep(step: number): void {
-    const previousStep = this.history.length ? this.steps[this.getLastStepIndex()] : {route: null};
-    const currentStep = this.steps[step];
-    this.routeChanged = previousStep.route !== currentStep.route;
-    this.history.push(step);
-    if (this.routeChanged) {
-      this.router.navigate([currentStep.route]);
-    }
-    this.currentStep$.next(currentStep.stepName);
-  }
-  public nextStep() {
-    const step = this.getLastStepIndex() + 1;
-    this.next({tourEvent: 'Init next', step, history: this.history});
-    this.initStep(step);
-  }
-  public prevStep() {
-    const step = this.getLastStepIndex() - 1;
-    this.prev({tourEvent: 'Init prev', step, history: this.history});
-    this.initStep(step);
-  }
-
-  public getLastStepIndex(): number {
-    return this.history.slice(-1)[0];
-  }
-  public getLastStep(): TourStepI {
-    return this.steps[this.getLastStepIndex()];
-  }
-  public getStepSubject(): Observable<string> {
-    return this.currentStep$;
+  public resetStep(stepName: string | number, step: TourStepI) {
+    const index = typeof stepName === 'number' ? stepName : this.getStepByName(stepName).index;
+    this.steps[index] = {...step};
   }
   public getStepByName(stepName: string): TourStepI {
     return this.steps.filter(step => step.stepName === stepName)[0];
   }
-
+  public getStepByIndex(index = 0): TourStepI {
+    return this.steps[index];
+  }
+  public getLastStep(): TourStepI {
+    if (this.history.length) return this.steps[this.history.slice(-1)[0]];
+    return null;
+  }
+  public getStepsStream(): Observable<string> {
+    return this.stepsStream$;
+  }
   public isRouteChanged() {
     return this.routeChanged;
   }
-  public getFirstStepOptions() {
-    return this.steps[0].options;
-  }
-  public getTotal(): number {
-    return this.steps.length;
-  }
-
   private setTourStatus(status: boolean): void {
     this.tourStarted = status;
   }
@@ -262,26 +317,21 @@ export class TourService {
     return this.tourStarted;
   }
   public startTour(tour: TourI) {
+    if (!this.validateOptions(tour)) {
+      throw new Error('Placement option of the ng3-tour or one of it step is invalid');
+    }
     const {tourBreak, tourStart, tourEnd, next, prev} = {...TourDefaultEvents, ...tour.tourEvents};
     tourStart({tourEvent: 'Tour start', tour});
     this.tourBreak = tourBreak;
     this.tourEnd = tourEnd;
     this.next = next;
     this.prev = prev;
-    if (!this.validateOptions(tour)) {
-      throw new Error('Placement option of the ng-tour or one of it step is invalid');
-    }
     this.setTourStatus(true);
-    this.withoutLogs = !!tour.withoutLogs;
     this.setSteps(tour);
     this.initStep(0);
   }
-  public getHistory() {
-    return this.history;
-  }
-
   public stopTour() {
-    const index = this.getLastStepIndex();
+    const index = this.getLastStep().index;
     const latestStepIndex = this.steps.length - 1;
     if ( index < latestStepIndex) {
       this.tourBreak({tourEvent: 'Tour break', step: index, history: this.history});
@@ -290,8 +340,18 @@ export class TourService {
     }
     this.setTourStatus(false);
     this.steps.length = 0;
-    this.currentStep$.next(null);
+    this.stepsStream$.next(null);
     this.history.length = 0;
     this.targetService.setTargetSubject(null);
+  }
+  public nextStep() {
+    const step = this.getLastStep().index + 1;
+    this.next({tourEvent: 'Init next', step, history: this.history});
+    this.initStep(step);
+  }
+  public prevStep() {
+    const step = this.getLastStep().index - 1;
+    this.prev({tourEvent: 'Init prev', step, history: this.history});
+    this.initStep(step);
   }
 }

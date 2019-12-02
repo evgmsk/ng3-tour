@@ -9,5 +9,4 @@ export * from './lib/services/tour.service';
 export * from './lib/directives/tour-root.directive';
 export * from './lib/directives/tour-step.directive';
 export * from './lib/directives/step-events.directive';
-export * from './lib/pipes/tour.pipe';
 export * from './lib/ng-tour.module';

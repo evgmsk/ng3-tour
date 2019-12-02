@@ -8,6 +8,7 @@ import { Component,
   OnDestroy,
   ViewEncapsulation,
   ElementRef,
+  ViewContainerRef
 } from '@angular/core';
 import {isPlatformBrowser} from '@angular/common';
 import {Observable, Subject} from 'rxjs';
@@ -32,6 +33,7 @@ export interface StepEventsI {
   templateUrl: './tour-step.component.html',
   styleUrls: ['./tour-step.component.scss'],
   encapsulation: ViewEncapsulation.None,
+  exportAs: 'steps$',
 })
 
 export class TourStepComponent implements OnInit, OnDestroy, StepEventsI {
@@ -39,13 +41,14 @@ export class TourStepComponent implements OnInit, OnDestroy, StepEventsI {
   targetElement: Element;
   target: StepSizeI;
   currentStep: TourStepI = null;
-  step$: Observable<TourStepI> = null;
+  steps$: Observable<TourStepI> = null;
   isBrowser: boolean;
   onDestroy = new Subject<any>();
   timeouts: any[] = [];
   stepModalPosition: {top?: number, left?: number, right?: number, bottom?: number};
   modalHeight: number;
   targetBackground: string;
+  lang = navigator.language;
   @Output() next: EventEmitter<any> = new EventEmitter();
   @Output() prev: EventEmitter<any> = new EventEmitter();
   @Output() done: EventEmitter<any> = new EventEmitter();
@@ -55,6 +58,7 @@ export class TourStepComponent implements OnInit, OnDestroy, StepEventsI {
     private readonly tourService: TourService,
     private readonly stepTargetService: StepTargetService,
     private elem: ElementRef,
+    private ref: ViewContainerRef,
     // @dynamic
     @Inject(PLATFORM_ID) platformId: {}) {
       this.isBrowser = isPlatformBrowser(platformId);
@@ -70,13 +74,14 @@ export class TourStepComponent implements OnInit, OnDestroy, StepEventsI {
       return;
     }
     this.stepModalPosition = {top: -500, left: -500};
-    this.subscribeToStepSubject();
-    this.step$ = this.stepTargetService.getTargetSubject().pipe(
+    this.subscribeToStepsStream();
+    this.steps$ = this.stepTargetService.getTargetSubject().pipe(
       map( step => {
+        if (this.currentStep) return this.currentStep;
         if (step && this.tourService.getTourStatus) {
           this.targetElement = step.target;
           this.currentStep = this.tourService.getStepByName(step.stepName);
-          this.saveStepData(this.currentStep);
+          this.saveStepData();
           this.saveTarget(step.target);
           return this.currentStep;
         }
@@ -88,15 +93,17 @@ export class TourStepComponent implements OnInit, OnDestroy, StepEventsI {
     this.onDestroy.next();
     this.timeouts.forEach(i => clearTimeout(i));
   }
-  private subscribeToStepSubject() {
-    this.tourService.getStepSubject().pipe(
+  
+  private subscribeToStepsStream() {
+    this.tourService.getStepsStream().pipe(
       takeUntil(this.onDestroy),
       map(step => {
         if (!step) {
           this.currentStep = null;
           return step;
         }
-        const {themeColor} = (this.currentStep && this.currentStep.options) || this.tourService.getFirstStepOptions();
+       
+        const {themeColor} = (this.currentStep && this.currentStep.options) || this.tourService.getStepByIndex().options;
         this.currentStep = null;
         this.resetClasses();
         const {delay} = this.tourService.getStepByName(step).options;
@@ -111,7 +118,7 @@ export class TourStepComponent implements OnInit, OnDestroy, StepEventsI {
     ).subscribe();
   }
   private checkTarget(step: string, times = 2) {
-    if (!this.tourService.getTourStatus()) {
+    if (!step || !this.tourService.getTourStatus()) {
       return;
     }
     const delay = this.tourService.getStepByName(step).options.delay;
@@ -122,7 +129,7 @@ export class TourStepComponent implements OnInit, OnDestroy, StepEventsI {
       console.warn(`Target is missed for step ${step}`);
       if (this.tourService.getStepByName(step).options.continueIfTargetAbsent) {
         const index = this.tourService.getStepByName(step).index + 1;
-        if (index < this.tourService.getTotal()) {
+        if (index < this.tourService.getLastStep().total) {
             this.tourService.nextStep();
         } else {
           console.warn(`The tour is stopped because of no targets is found  for step ${step} and next ones`);
@@ -134,7 +141,7 @@ export class TourStepComponent implements OnInit, OnDestroy, StepEventsI {
   }
   private resetClasses(): void {
     const step = this.currentStep;
-    const source = (step && step.options) || this.tourService.getFirstStepOptions();
+    const source = (step && step.options) || this.tourService.getStepByIndex().options;
     const {arrowToTarget, animatedStep, placement, className} = source;
     const arrowClass = arrowToTarget ? 'with-arrow' : '';
     const animationClass = animatedStep
@@ -147,7 +154,7 @@ export class TourStepComponent implements OnInit, OnDestroy, StepEventsI {
     this.stepTargetService.getSizeAndPosition(target), this.currentStep.options.stepTargetResize);
     this.timeouts[this.timeouts.length] = setTimeout(() => this.defineStepPlacement(), 0);
   }
-  private saveStepData(step: TourStepI): void {
+  private saveStepData(): void {
     this.resetClasses();
     this.targetBackground = 'transparent';
   }
@@ -184,8 +191,8 @@ export class TourStepComponent implements OnInit, OnDestroy, StepEventsI {
     }
   }
   private setFocus(modal: Element) {
-    const nextBtn = modal.querySelector('.btn-next') as HTMLElement;
-    const endBtn = modal.querySelector('.btn-end') as HTMLElement;
+    const nextBtn = modal.querySelector('.tour-btn-next') as HTMLElement;
+    const endBtn = modal.querySelector('.tour-btn-done') as HTMLElement;
     if (nextBtn) {
       nextBtn.focus();
     } else if (endBtn) {
@@ -206,7 +213,7 @@ export class TourStepComponent implements OnInit, OnDestroy, StepEventsI {
   public onNext(event: Event) {
     this.next.emit({
       stepEvent: 'next',
-      index: this.tourService.getLastStepIndex() + 1,
+      index: this.currentStep.index + 1,
       history: this.tourService.getHistory(),
     });
     this.tourService.nextStep();
@@ -214,22 +221,22 @@ export class TourStepComponent implements OnInit, OnDestroy, StepEventsI {
   public onPrev(event: Event) {
     this.prev.emit({
       stepEvent: 'prev',
-      index: this.tourService.getLastStepIndex() - 1,
+      index: this.currentStep.index - 1,
       history: this.tourService.getHistory(),
     });
     this.tourService.prevStep();
   }
   public onClose(event: Event) {
-    if (this.tourService.getLastStepIndex() !== this.tourService.getTotal() - 1) {
+    if (this.currentStep.index !== this.currentStep.total - 1) {
       this.break.emit({
         stepEvent: 'break',
-        index: this.tourService.getLastStepIndex(),
+        index: this.currentStep.index,
         history: this.tourService.getHistory(),
       });
     } else {
       this.done.emit({
         stepEvent: 'done',
-        index: this.tourService.getLastStepIndex(),
+        index: this.currentStep.index,
         history: this.tourService.getHistory(),
       });
     }

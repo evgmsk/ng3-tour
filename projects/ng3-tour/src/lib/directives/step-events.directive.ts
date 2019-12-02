@@ -35,45 +35,54 @@ export class StepEventsDirective implements OnInit {
             return;
         }
         if (this.eventType === 'next') {
-            this.handler = () => {
-                this.next.emit({
-                    tourEvent: 'next',
-                    index: this.tourService.getLastStepIndex() + 1,
-                    history: this.tourService.getHistory()
-                });
-                this.tourService.nextStep();
-            };
+           this.handleNext();
         }
         if (this.eventType === 'prev') {
-            this.handler = () => {
-                this.prev.emit({
-                    tourEvent: 'next',
-                    index: this.tourService.getLastStepIndex() - 1,
-                    history: this.tourService.getHistory()
-                });
-                this.tourService.prevStep();
-            };
+            this.handlePrev();
         }
         if (this.eventType === 'close') {
-            this.handler = () => {
-                if (this.tourService.getLastStepIndex() + 1 === this.tourService.getTotal()) {
-                    this.done.emit({
-                        tourEvent: 'done',
-                        index: this.tourService.getLastStepIndex(),
-                        history: this.tourService.getHistory()
-                    });
-                } else {
-                    this.break.emit({
-                        tourEvent: 'break',
-                        index: this.tourService.getLastStepIndex(),
-                        history: this.tourService.getHistory()
-                    });
-                }
-                this.tourService.stopTour();
-            };
+            this.handleClose();
         }
     }
     @HostListener('click', ['$event']) onClick(event: Event) {
         this.handler();
+    }
+    handleNext() {
+        return this.handler = () => {
+            this.next.emit({
+                tourEvent: 'next',
+                index: this.tourService.getLastStep().index + 1,
+                history: this.tourService.getHistory()
+            });
+            this.tourService.nextStep();
+        };
+    }
+    handlePrev() {
+        return this.handler = () => {
+            this.prev.emit({
+                tourEvent: 'next',
+                index: this.tourService.getLastStep().index - 1,
+                history: this.tourService.getHistory()
+            });
+            this.tourService.prevStep();
+        };
+    }
+    handleClose() {
+        return this.handler = () => {
+            if (this.tourService.getLastStep().index + 1 === this.tourService.getLastStep().total) {
+                this.done.emit({
+                    tourEvent: 'done',
+                    index: this.tourService.getLastStep().index,
+                    history: this.tourService.getHistory()
+                });
+            } else {
+                this.break.emit({
+                    tourEvent: 'break',
+                    index: this.tourService.getLastStep().index,
+                    history: this.tourService.getHistory()
+                });
+            }
+            this.tourService.stopTour();
+        };
     }
 }

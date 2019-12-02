@@ -29,7 +29,7 @@ export class TourStepDirective implements AfterViewInit, OnDestroy {
     if (!this.isBrowser) {
       return;
     }
-    this.tour.getStepSubject().pipe(
+    this.tour.getStepsStream().pipe(
       takeUntil(this.onDestroy),
       map((stepName: string) => {
         if (!stepName || this.name !== stepName) {
