@@ -222,7 +222,7 @@ route | yes | string | define route corresponded to the Step |
 index | no | number |  'Index' value is set by TourService service according to the position of the Step in the Steps array | 
 title | no | string | Set title of the current Step | ""
 description | no | string | Set description of the current Step | ""
-ctrlBtns | no | CtrlBtnsI | Set translations of the control buttons for any languages you want | see below
+ctrlBtns | no | CtrlBtnsI | Set translations of the control buttons for any languages you want | [^1] see below 
 options | no | StepOptionsI | To customize separate Step | described below
 options: | | | |
 className | no | string | Set custom class to the Step component | ""
@@ -248,6 +248,8 @@ maxHeight | no | string | Define max-height of the Step modal | '400px'
 autofocus | no | boolean | If true 'next' and 'done' buttons obtain focus | true
 
 defaultCtrlBtns: 
+
+[^1]:  btns
 
     {
         done: {
