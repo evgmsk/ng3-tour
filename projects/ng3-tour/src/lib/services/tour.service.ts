@@ -1,4 +1,5 @@
-import {Injectable, isDevMode} from '@angular/core';
+import {Injectable, isDevMode, PLATFORM_ID, Inject} from '@angular/core';
+import {isPlatformBrowser} from '@angular/common'
 import {BehaviorSubject, Observable} from 'rxjs';
 import {Router} from '@angular/router';
 
@@ -189,6 +190,7 @@ export const TourDefaultEvents = {
   prev: defaultTourEvent,
 };
 
+ // @dynamic
 @Injectable()
 export class TourService {
   private steps: TourStepI[];
@@ -202,11 +204,22 @@ export class TourService {
   private tourEnd = TourDefaultEvents.tourEnd;
   private next = TourDefaultEvents.next;
   private prev = TourDefaultEvents.prev;
-  private lang = navigator.language;
-  constructor(private router: Router, private readonly targetService: StepTargetService) {
+  private isBrowser: boolean;
+  private lang: string;
+  constructor(
+    private router: Router,
+    private readonly targetService: StepTargetService,
+    // @dynamic
+    @Inject(PLATFORM_ID) platformId: {}) {
     this.nextStep = this.nextStep.bind(this);
     this.prevStep = this.prevStep.bind(this);
     this.stopTour = this.stopTour.bind(this);
+    this.isBrowser = isPlatformBrowser(platformId);
+    if (this.isBrowser) {
+      this.lang = navigator.language;
+    } else {
+      this.lang = ''
+    }
   }
 
   private validateOptions(tour: TourI): boolean {
@@ -245,6 +258,7 @@ export class TourService {
   }
 
   private defineLocalName(prop: any): string {
+    if (!this.isBrowser) return '';
     if (prop.hasOwnProperty(this.lang)) return prop[this.lang];
     if(prop.hasOwnProperty('en-EN')) return prop['en-EN'];
     const res = Object.values(prop)[0];
@@ -264,7 +278,7 @@ export class TourService {
           const res = Object.values(prop)[0];
           if (typeof res === 'string') {
             btnCtrls[prop] = res;
-          } else {
+          } else if (this.isBrowser) {
             console.error(`Tour configuration error with ${JSON.stringify(btns)}`);
             btnCtrls[prop] = 'Error'
           }  

@@ -48,7 +48,6 @@ export class TourStepComponent implements OnInit, OnDestroy, StepEventsI {
   stepModalPosition: {top?: number, left?: number, right?: number, bottom?: number};
   modalHeight: number;
   targetBackground: string;
-  lang = navigator.language;
   @Output() next: EventEmitter<any> = new EventEmitter();
   @Output() prev: EventEmitter<any> = new EventEmitter();
   @Output() done: EventEmitter<any> = new EventEmitter();
