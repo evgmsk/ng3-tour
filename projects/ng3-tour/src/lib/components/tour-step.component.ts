@@ -176,6 +176,24 @@ export class TourStepComponent implements OnInit, OnDestroy, StepEventsI {
       this.stepModalPosition = {left: left - modalWidth - 20, top};
     } else if (/^right$/i.test(placement)) {
       this.stepModalPosition = {left: right + width + 20, top};
+    } else if (/^left-top$/i.test(placement)) {
+      this.stepModalPosition = {
+        left: left - modalWidth - 20, top: top - this.modalHeight + 50
+      };
+    } else if (/^right-top$/i.test(placement)) {
+      this.stepModalPosition = {
+        left: right + width + 20, top: top - this.modalHeight + 50
+      };
+    } else if (/^right-center$/i.test(placement)) {
+      this.stepModalPosition = {
+        right: 50,
+        top: Math.round(window.innerHeight / 2 - this.modalHeight / 2)
+      };
+    } else if (/^left-center$/i.test(placement)) {
+      this.stepModalPosition = {
+        left: 50,
+        top: Math.round(window.innerHeight / 2 - this.modalHeight / 2)
+      };
     } else if (/^center$/i.test(placement)) {
       this.stepModalPosition = {
         left: Math.round(window.innerWidth / 2 - modalWidth / 2),
@@ -189,6 +207,7 @@ export class TourStepComponent implements OnInit, OnDestroy, StepEventsI {
       this.scrollTo();
     }
   }
+  
   private setFocus(modal: Element) {
     const nextBtn = modal.querySelector('.tour-btn-next') as HTMLElement;
     const endBtn = modal.querySelector('.tour-btn-done') as HTMLElement;

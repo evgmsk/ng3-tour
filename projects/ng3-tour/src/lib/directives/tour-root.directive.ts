@@ -32,7 +32,7 @@ export class TourRootDirective implements OnInit, OnDestroy {
         private elem: ElementRef,
         private readonly tourService: TourService,
         private readonly targetService: StepTargetService,
-        private viewContaner: ViewContainerRef,
+        private viewContainer: ViewContainerRef,
         private componentFactory: ComponentFactoryResolver,
         // @dynamic
         @Inject(PLATFORM_ID) platformId: {}) {
@@ -44,16 +44,14 @@ export class TourRootDirective implements OnInit, OnDestroy {
             return;
         }
         const parent = this.elem.nativeElement.parentNode;
+        const children = Array.prototype.slice.apply(parent.childNodes);
         if (parent.localName !== 'app-root') {
             console.warn(`You placed ngIfTour directive in ${this.elem.nativeElement.localName} inside ${parent.localName}.
                 Are you sure ${parent.localName} better choice then app-root?`);
         }
-        const isTourTemplate = [...parent.childNodes].filter((c: Element) => c.localName === 'ng-tour-step-template').length;
-        if (isTourTemplate) {
-            this.customTemplate = true;
-        }
+        const isTourTemplate = children.filter((c: Element) => c.localName === 'ng-tour-step-template').length;
         let componentRef: any;
-        if (this.customTemplate) {
+        if (isTourTemplate) {
             this.tourService.setPresets({customTemplate: true});
         } else {
             this.targetService.getTargetSubject().pipe(
@@ -61,14 +59,13 @@ export class TourRootDirective implements OnInit, OnDestroy {
             map((step: any) => {
                 if (step && !this.isCreated) {
                     this.isCreated = true;
-                    componentRef = this.viewContaner.createComponent(this.modalFactory);
+                    componentRef = this.viewContainer.createComponent(this.modalFactory);
                 } else if (!step && this.isCreated) {
                     this.isCreated = false;
-                    this.viewContaner.remove(this.viewContaner.indexOf(componentRef));
+                    this.viewContainer.remove(this.viewContainer.indexOf(componentRef));
                 }
                 return step;
-                }
-            )).subscribe();
+            })).subscribe();
         }
     }
     ngOnDestroy() {

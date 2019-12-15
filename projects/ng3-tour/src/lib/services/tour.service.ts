@@ -223,7 +223,7 @@ export class TourService {
   }
 
   private validateOptions(tour: TourI): boolean {
-    const regExpr = /^top$|^down$|^left$|^right$|^center$/i;
+    const regExpr = /^top$|^down$|^left$|^right$|^center$|^right-center$|^left-center$|^right-top$|^left-top$/i;
     let isValid = true;
     tour.steps.forEach((step: TourStepI) => {
       if (step.options && step.options.placement) {
@@ -266,18 +266,26 @@ export class TourService {
     console.error(`Tour configuration error with ${JSON.stringify(prop)}`)
     return 'Error'
   }
+
   private defineLocalBtnNames(btns: CtrlBtnsI): CtrlBtnsI {
     const btnCtrls = {};
     for (let prop in btns) {
       if (btns.hasOwnProperty(prop)) {
+        let result: string;
         if (typeof btns[prop] === 'string') {
-          btnCtrls[prop] = btns[prop];
-        } else if (typeof btns[prop] === 'object' && this.lang in btns[prop]) {
-          btnCtrls[prop] = btns[prop][this.lang]
+          result = btns[prop];
+        } else if (typeof btns[prop] === 'object' && btns[prop][this.lang] === 'string') {
+          result = btns[prop][this.lang]
         } else {
-          const res = Object.values(prop)[0];
-          if (typeof res === 'string') {
-            btnCtrls[prop] = res;
+          const setLanguages = Object.keys(btns[prop]);
+          const ralatedLang = setLanguages.filter(l => l.includes(this.lang.slice(0, 2)))[0];
+          if (ralatedLang) {
+            result = btns[prop][ralatedLang]
+          } else {
+            result = btns[prop][setLanguages[0]];
+          }
+          if (typeof result === 'string') {
+            btnCtrls[prop] = result;
           } else if (this.isBrowser) {
             console.error(`Tour configuration error with ${JSON.stringify(btns)}`);
             btnCtrls[prop] = 'Error'

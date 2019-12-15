@@ -1,6 +1,6 @@
 {
   "name": "ng3-tour",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -16,7 +16,7 @@
     "url": "https://github.com/evgmsk/ng3-tour"
   },
   "keywords": [
-    "angular, tour, ng-tour, directive, pipe, ui component, onboarding, Angular2"
+    "angular, tour, ng-tour, directive, ui component, onboarding, Angular2"
   ],
   "author": "evgmsk",
   "license": "MIT",
@@ -34,6 +34,7 @@
     "core-js": "^2.5.4",
     "mem": "^5.1.1",
     "rxjs": "~6.5.3",
+    "serialize-javascript": "^2.1.2",
     "zone.js": "~0.9.1"
   },
   "devDependencies": {
