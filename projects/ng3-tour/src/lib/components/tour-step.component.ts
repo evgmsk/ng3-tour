@@ -62,6 +62,13 @@ export class TourStepComponent implements OnInit, OnDestroy, StepEventsI {
     @Inject(PLATFORM_ID) platformId: {}) {
       this.isBrowser = isPlatformBrowser(platformId);
   }
+  @HostListener('document:click', ['$event']) clickOutsideToClose($Event: Event): void {
+    if (this.currentStep) {
+      if (this.currentStep.options.closeOnClickOutside && !this.elem.nativeElement.contains($Event.target)) {
+        this.onClose($Event);
+      }
+    }       
+  }
   @HostListener('window:resize', ['$event']) onResize(event: Event) {
     if (this.target && this.currentStep) {
       this.saveTarget(this.targetElement);

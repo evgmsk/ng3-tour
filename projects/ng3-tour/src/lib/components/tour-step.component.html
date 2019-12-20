@@ -46,7 +46,7 @@
           class="tour-btn tour-btn-prev"
           (click)="onPrev($event)"
         >
-          {{step.btnCtrls.prev}}
+          {{step.ctrlBtns.prev}}
         </button>
         <button
           *ngIf="step.index + 1 !== step.total"
@@ -54,7 +54,7 @@
           class="tour-btn tour-btn-next"
           (click)="onNext($event)"          
         >
-          {{step.btnCtrls.next}}
+          {{step.ctrlBtns.next}}
         </button>
         <button
           *ngIf="step.index + 1 === step.total"
@@ -62,7 +62,7 @@
           class="tour-btn tour-btn-done"
           (click)="onClose($event)"
         >
-          {{step.btnCtrls.done}}
+          {{step.ctrlBtns.done}}
         </button>
       </div>
     </div>

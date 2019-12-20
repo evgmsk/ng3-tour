@@ -10,6 +10,7 @@ export interface TourI {
   tourOptions?: StepOptionsI;
   withoutLogs?: boolean;
   tourEvents?: TourEventsI;
+  ctrlBtns?: CtrlBtnsI;
 }
 
 export interface TourStepI {
@@ -70,7 +71,7 @@ export interface StepOptionsI {
   stepTargetResize?: number[]; // change size of a 'window' for step target
   delay?: number; // for the case of the lazily loaded or animated routes
   autofocus?: boolean;
-  i18nBtn?: CtrlBtnsI;
+  closeOnClickOutside?: boolean;
 }
 
 export const defaultOptions: StepOptionsI = {
@@ -86,15 +87,16 @@ export const defaultOptions: StepOptionsI = {
   placement: 'down',
   arrowToTarget: true,
   stepTargetResize: [0],
-  delay: 500,
+  delay: 1000,
   animatedStep: true,
   fixed: false,
   backdrop: true,
-  minWidth: '150px',
+  minWidth: '250px',
   minHeight: '150px',
   maxWidth: '400px',
-  maxHeight: '400px',
+  maxHeight: '600px',
   autofocus: true,
+  closeOnClickOutside: false,
 };
 
 export class StepOptions implements StepOptionsI {
@@ -119,6 +121,7 @@ export class StepOptions implements StepOptionsI {
   maxWidth?: string;
   maxHeight?: string;
   autofocus?: boolean;
+  closeOnClickOutside?: boolean;
   constructor(options: StepOptionsI = defaultOptions) {
     const {
       className,
@@ -142,6 +145,7 @@ export class StepOptions implements StepOptionsI {
       fixed,
       backdrop,
       autofocus,
+      closeOnClickOutside,
     } = options;
     this.className = className;
     this.placement = placement;
@@ -164,8 +168,10 @@ export class StepOptions implements StepOptionsI {
     this.scrollTo = scrollTo;
     this.fixed = fixed;
     this.autofocus = autofocus;
+    this.closeOnClickOutside = closeOnClickOutside
   }
 }
+
 export type TourEvent =  (props: {
   tourEvent: string,
   step?: number | string,
@@ -247,7 +253,7 @@ export class TourService {
       }
       x.options = x.options ? {...options, ...x.options} : options;
       x.total = tour.steps.length;
-      x.btnCtrls = this.defineLocalBtnNames(x.btnCtrls || defaultCtrlBtns)
+      x.ctrlBtns = this.defineLocalBtnNames(tour.ctrlBtns || defaultCtrlBtns)
       return x;
     });
     if (isDevMode()) {
@@ -257,13 +263,26 @@ export class TourService {
     }
   }
 
-  private defineLocalName(prop: any): string {
-    if (!this.isBrowser) return '';
-    if (prop.hasOwnProperty(this.lang)) return prop[this.lang];
-    if(prop.hasOwnProperty('en-EN')) return prop['en-EN'];
-    const res = Object.values(prop)[0];
-    if (typeof res === 'string') return res;
-    console.error(`Tour configuration error with ${JSON.stringify(prop)}`)
+  private defineLocalName(obj: any): string {
+    let result: string;
+    if (!this.isBrowser) {
+      return '';
+    }
+    if (obj.hasOwnProperty(this.lang)) {
+      result = obj[this.lang];
+    } else {
+      const setLanguages = Object.keys(obj);
+      const ralatedLang = setLanguages.filter(l => l.includes(this.lang.slice(0, 2)))[0];
+      if (ralatedLang) {
+        result = obj[ralatedLang]
+      } else {
+        result = obj[setLanguages[0]];
+      }
+    }
+    if (typeof result === 'string') {
+      return result;
+    }
+    console.error(`Tour configuration error with ${JSON.stringify(obj)}`)
     return 'Error'
   }
 
