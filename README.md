@@ -11,18 +11,22 @@ An Angular Tour (ng3-tour) light library is **built entirely** in Angular and al
 ## Usage 
 
 1. Import the NgTourModule in your AppModule:
+
+
 ```
-    @NgModule({
-        declarations: [AppComponent],
-        imports: [
-                RouterModule.forRoot([]),
-                NgTourModule.forRoot(),
-                BrowserModule
-        ],
-        providers: [],
-        bootstrap: [AppComponent]
-        })
-    export class AppModule { }
+import {AngularTourModule} from 'ng3-tour';
+
+@NgModule({
+    declarations: [AppComponent],
+    imports: [
+            RouterModule.forRoot([]),
+            AngularTourModule.forRoot(),
+            BrowserModule
+    ],
+    providers: [],
+    bootstrap: [AppComponent]
+    })
+export class AppModule { }
 ```
 
 2. Import the NgTourModule in your Feature Modules:
