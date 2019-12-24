@@ -184,7 +184,7 @@ title: {
 }
 ```
 
-You also can define the required translations for the Step controls. Simply pass the corresponded object to the Tour option ctrlBtns. 
+You also can define t he required translations for the Step controls. Simply pass the corresponded object to the Tour option ctrlBtns. There is default value below.
 
 ```   
 ctrlBtns: {
@@ -231,7 +231,7 @@ prev | no | {tourEvent: string, step?: number, history?: number[]} | Add logic e
 
 ### Step Properties (StepOptions)
 Name | Required | Type | Destination | Default value
------|---|----|------|----
+-----|---|----|-----|---
 stepName | yes | string | Define unique name of the Step | 
 route | yes | string | Define route corresponded to the Step |
 index | no | number |  'Index' value is set by TourService service according to the position of the Step in the Steps array | 
@@ -261,6 +261,7 @@ minHeight | no | string | Define min-height of the Step modal | '200px'
 maxWidth | no | string | Define max-width of the Step modal | '400px'
 maxHeight | no | string | Define max-height of the Step modal | '400px'
 autofocus | no | boolean | If true 'next' and 'done' buttons obtain focus | true
+closeOnClickOutside | no | boolean |If true any click outside step modal will cause closing the Tour. This is maybe useful if you set backdrop options to false and user have access to your site controls (for example navigation menu) | false
 
 #### DefaultCtrlBtns: 
 
@@ -287,7 +288,7 @@ autofocus | no | boolean | If true 'next' and 'done' buttons obtain focus | true
 
 #### TourService methods: 
 Name | Args |  Description | Return
------|------|---------------------|--------
+-----|------|------|-----
 main | | |
 startTour | tour: TourI | start Tour (The only necessary to use this lib) | void |
 prevStep | | Call initStep with previous stepName | void 
@@ -322,7 +323,7 @@ This directive binds listeners (with corresponded Tour methods) to Step's contro
 stepEvent | required | Possible values are 'next' , 'prev' and 'close'. Value predefines which handler will be implemented for the click event. 
 
 @Output	| Props | Destination
---------|-------|-------------
+--------|-------|---------
 next | {tourEvent: string, step: number, history: number[]} | Emit 'next' event with described props. The destination is the same as tourEvents have
 prev | {tourEvent: string, step: number, history number[]} | Emit 'prev' event with described props.
 break | {tourEvent: string, step: number, history: number[]} | Emit 'break' event with described props.
@@ -334,7 +335,7 @@ done | {tourEvent: string, step: number, history: number[]}| Emit 'done' event w
 #### ng-tour-step-template
 
 Output | Props |     Description     
------|------|---------------------
+-----|------|--------
 next | {tourEvent: string, step: number, history: number[]} | Emit 'next' event with described props. The destination is the same as tourEvents have  
 prev | {tourEvent: string, step: number, history: number[]}  | Emit 'prev' event with described props.
 break | {tourEvent: string, step: number, history: number[]} | Emit 'break' event with described props.
