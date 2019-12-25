@@ -236,7 +236,7 @@ export class TourService {
         isValid = regExpr.test(step.options.placement);
       }
     });
-    if (tour.tourOptions.placement) {
+    if (tour.tourOptions && tour.tourOptions.placement) {
       isValid = regExpr.test(tour.tourOptions.placement);
     }
     return isValid;
