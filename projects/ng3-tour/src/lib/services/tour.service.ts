@@ -257,7 +257,7 @@ export class TourService {
       return x;
     });
     if (isDevMode()) {
-      console.log('mode: ', isDevMode())
+      console.log('Development mode: ', isDevMode())
       console.log('ng3-tour is initiated with steps:');
       console.log(this.steps);
     }

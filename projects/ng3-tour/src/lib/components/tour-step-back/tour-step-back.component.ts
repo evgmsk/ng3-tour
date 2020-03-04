@@ -10,7 +10,7 @@ export class TourStepBackComponent implements OnInit {
   @Input() stepBackSize: {[propName: string]: any};
   @Input() position: string;
   @Input() opacity: number;
-  @Input() targetBackground: number;
+  @Input() targetBackground: string;
 
   constructor() { }
 

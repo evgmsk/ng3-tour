@@ -112,8 +112,8 @@ onClick() {
 If you want to use tour own Step template wrap it with `<ng-tour-step-template>` and place in **app.component.html**.  Mark the provided template with reference with assigned value 'step$' that gives you access to steps Stream. To handle controls event you could use tourEvent directive with corresponded input value (one of 'next', 'prev', 'close') 
 
 ```
-<ng-tour-step-template #refToExportAs="step$" tourStepData (next)="onNext($event)" (done)="onDone($event)">
-    <div  class="tour-step-modal__content" *ngIf="refToExportAs.step$ | async as step">
+<ng-tour-step-template #refToExportAs="steps$" tourStepData (next)="onNext($event)" (done)="onDone($event)">
+    <div  class="tour-step-modal__content" *ngIf="refToExportAs.steps$ | async as step">
         <div >
             <div class="tour-step-modal__header">
                 <h3 class="tour-step-modal__title"> 

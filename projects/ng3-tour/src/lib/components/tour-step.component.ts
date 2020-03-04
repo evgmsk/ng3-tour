@@ -57,7 +57,7 @@ export class TourStepComponent implements OnInit, OnDestroy, StepEventsI {
     private readonly tourService: TourService,
     private readonly stepTargetService: StepTargetService,
     private elem: ElementRef,
-    private ref: ViewContainerRef,
+    // private ref: ViewContainerRef,
     // @dynamic
     @Inject(PLATFORM_ID) platformId: {}) {
       this.isBrowser = isPlatformBrowser(platformId);

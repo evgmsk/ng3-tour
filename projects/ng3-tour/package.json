@@ -1,6 +1,6 @@
 {
   "name": "ng3-tour",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "An Angular Tour (ng3-tour) light library is built entirely in Angular and allows you easily master guide for your users through your site showing them all the sections and features including lazily loaded.",
   "repository": {
     "type": "git",
