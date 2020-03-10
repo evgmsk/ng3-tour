@@ -234,7 +234,7 @@ These events are functions witch is called within corresponded tourService metho
 
 Name | Required | Props | Description  
 -----|----|----|------------
-tourStart | no | {tourEvent: string, tour?: Tour} | Add logic executed before the Tour will be started | 
+tourStart | no | {tourEvent: string, tour?: Tour} | Add logic executed before the Tour will be started 
 tourBreak | no | {tourEvent: string, step?: number, history?: number[]} | Add logic executing before the Tour will be stoped untimely
 tourEnd | no | {tourEvent: string, step?: number, history?: number[]} | Add logic executing before the Tour will be stopped after finishing (latest step was visited)
 next | no | {tourEvent: string, step?: number, history?: number[]} | Add logic executing before the next step will be initiated
@@ -282,19 +282,19 @@ closeOnClickOutside | no | boolean |If true any click outside step modal will ca
 Name | Args |  Description | Return
 -----|------|------|-----
 main: | | |
-startTour | tour: Tour | start Tour (The only necessary to use this lib) | void |
+startTour | tour: Tour | start Tour (The only necessary to use this lib) | void 
 prevStep | | Call initStep with previous stepName | void 
 nextStep | | Call initStep with next stepName | void 
 stopTour | | stop Tour | void 
 additional: | | |
-getStepsStream | | Return the steps observable
-resetStep | string | number, TourStep | Change Step configuration
-getHistory | | return array of the indexes of the passed Steps
-getStepByName | string | return the Step with the given stepName
-getStepByIndex | number | return the Step with the given index
-getLastStep | | return the last initialized Step
-isRouteChanged | | return true if the route property of the current Step differs from the previous one
-getTourStatus | | return true if Tour started
+getStepsStream | | Return the steps observable | steps$
+resetStep | string | number, TourStep | Change Step configuration | void
+getHistory | | return array of the indexes of the passed Steps | stepIndexes[]
+getStepByName | string | return the Step with the given stepName | TourStep
+getStepByIndex | number | return the Step with the given index | TourStep
+getLastStep | | return the last initialized Step | TourStep
+isRouteChanged | | return true if the route property of the current Step differs from the previous one | boolean
+getTourStatus | | return true if Tour started | boolean
 
 
 ### Directives 
