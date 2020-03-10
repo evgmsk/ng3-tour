@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import {BehaviorSubject, Observable} from 'rxjs';
 
-export interface StepSizeI {
+export interface TargetSize {
   top: number;
   left: number;
   bottom: number;
@@ -39,7 +39,7 @@ export class StepTargetService {
     return {top, left, bottom, right, width, height, pageHeight};
   }
 
-  public resizeTarget(target: StepSizeI, size: number[]): StepSizeI {
+  public resizeTarget(target: TargetSize, size: number[]): TargetSize {
     target.left -= size[0];
     target.right += size[0];
     target.top -= size[1] || size[0];

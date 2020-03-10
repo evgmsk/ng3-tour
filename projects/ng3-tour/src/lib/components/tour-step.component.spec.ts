@@ -42,7 +42,6 @@ describe('TourStepComponent', () => {
     expect(component).toBeTruthy();
     const userService = fixture.debugElement.injector.get(TourService);
     const usService = TestBed.get(TourService);
-    console.log(userService, 'sd', usService)
   });
   it ('simple test', () => {
     expect(true).toBe(true)

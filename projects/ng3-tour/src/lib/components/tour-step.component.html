@@ -38,7 +38,7 @@
       </div>
       <div class="tour-step-modal__footer">
         <div *ngIf="!step.withoutCounter" class="tour-step-modal__counter">
-          {{step.index + 1}} of {{step.total}}
+          {{step.index + 1}} {{step.ctrlBtns.of}} {{step.total}}
         </div>
         <button
           *ngIf="!step.withoutPrev && step.index" 
@@ -66,8 +66,8 @@
         </button>
       </div>
     </div>
-    
-      <ng-content ></ng-content>
-   
+      <div *ngIf="step.options.customTemplate">
+        <ng-content ></ng-content>
+      </div>
   </div>
 </div>

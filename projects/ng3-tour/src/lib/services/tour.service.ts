@@ -5,33 +5,55 @@ import {Router} from '@angular/router';
 
 import {StepTargetService} from './step-target.service';
 
-export interface TourI {
-  steps: TourStepI[];
-  tourOptions?: StepOptionsI;
+export interface Tour {
+  steps: TourStep[];
+  tourOptions?: StepOptions;
   withoutLogs?: boolean;
-  tourEvents?: TourEventsI;
-  ctrlBtns?: CtrlBtnsI;
+  tourEvents?: TourEvents;
+  ctrlBtns?: CtrlBtns;
 }
 
-export interface TourStepI {
+export interface TourStep {
   stepName: string;
   route?: string;
   index?: number;
   title?: string | {[propName: string]: any};
   description?: string | {[propName: string]: any};
-  options?: StepOptionsI;
-  ctrlBtns?: CtrlBtnsI;
+  options?: StepOptions;
+  ctrlBtns?: CtrlBtns;
   [propName: string]: any;
 }
 
-export interface CtrlBtnsI {
+export interface CtrlBtns {
   prev?: {[propsName: string]: any};
   next?: {[propsName: string]: any};
   done?: {[propsName: string]: any};
   [propsName: string]: any;
 }
 
-export const defaultCtrlBtns = {
+
+// export const defaultInternalization = {
+//   "en": {
+//     "done": "done",
+//     "prev": "prev",
+//     "next": "next",
+//     "of": "of"
+//   },
+//   "fr": {
+//     "done": "fini",
+//     "prev": "préc",
+//     "next": "proch",
+//     "of": "de"
+//   },
+//   "ru": {
+//     "done": "закр",
+//     "prev": "пред",
+//     "next": "след",
+//     "of": "из"
+//   }
+// }
+
+export const defaultTranslation = {
   done: {
    'en-EN': 'done',
    'ru-RU': 'закр',
@@ -47,34 +69,14 @@ export const defaultCtrlBtns = {
     'ru-RU': 'след',
     'fr-FR': 'proch',
   },
+  of: {
+    'en-EN': 'of',
+    'fr-FR': 'de',
+    'ru-RU': "из",
+  }
 }
 
-export interface StepOptionsI {
-  className?: string;
-  withoutCounter?: boolean;
-  withoutPrev?: boolean;
-  customTemplate?: boolean;
-  themeColor?: string;
-  opacity?: number;
-  placement?: string;
-  arrowToTarget?: boolean;
-  backdrop?: boolean;
-  animatedStep?: boolean;
-  smoothScroll?: boolean;
-  scrollTo?: boolean;
-  fixed?: boolean;
-  minWidth?: string; // Step min-width
-  minHeight?: string; // Step min-height
-  maxWidth?: string; // Step max-width
-  maxHeight?: string; // Step max-height
-  continueIfTargetAbsent?: boolean; // init next step if target is not found for current one
-  stepTargetResize?: number[]; // change size of a 'window' for step target
-  delay?: number; // for the case of the lazily loaded or animated routes
-  autofocus?: boolean;
-  closeOnClickOutside?: boolean;
-}
-
-export const defaultOptions: StepOptionsI = {
+export const defaultOptions: StepOptions = {
   className: '',
   continueIfTargetAbsent: true,
   withoutCounter: false,
@@ -83,7 +85,7 @@ export const defaultOptions: StepOptionsI = {
   smoothScroll: false,
   scrollTo: true,
   themeColor: 'rgb(20, 60, 60)',
-  opacity: .6,
+  opacity: .7,
   placement: 'down',
   arrowToTarget: true,
   stepTargetResize: [0],
@@ -99,14 +101,14 @@ export const defaultOptions: StepOptionsI = {
   closeOnClickOutside: false,
 };
 
-export class StepOptions implements StepOptionsI {
+export class StepOptions {
   className?: string;
   withoutCounter?: boolean;
   withoutPrev?: boolean;
   customTemplate?: boolean;
   themeColor?: string;
   opacity?: number;
-  placement: string;
+  placement?: string;
   arrowToTarget?: boolean;
   backdrop?: boolean;
   animatedStep?: boolean;
@@ -122,7 +124,7 @@ export class StepOptions implements StepOptionsI {
   maxHeight?: string;
   autofocus?: boolean;
   closeOnClickOutside?: boolean;
-  constructor(options: StepOptionsI = defaultOptions) {
+  constructor(options = defaultOptions) {
     const {
       className,
       continueIfTargetAbsent,
@@ -176,10 +178,10 @@ export type TourEvent =  (props: {
   tourEvent: string,
   step?: number | string,
   history?: number[],
-  tour?: TourI,
+  tour?: Tour,
 }) => void;
 
-export interface TourEventsI {
+export interface TourEvents {
   tourStart?: TourEvent;
   tourEnd?: TourEvent;
   tourBreak?: TourEvent;
@@ -188,6 +190,7 @@ export interface TourEventsI {
 }
 
 export const defaultTourEvent: TourEvent = (props) => {};
+
 export const TourDefaultEvents = {
   tourStart: defaultTourEvent,
   tourEnd: defaultTourEvent,
@@ -199,12 +202,12 @@ export const TourDefaultEvents = {
  // @dynamic
 @Injectable()
 export class TourService {
-  private steps: TourStepI[];
+  private steps: TourStep[];
   private tourStarted = false;
   private stepsStream$ = new BehaviorSubject<any>(null);
   private history = [];
   private routeChanged = false;
-  private presets: StepOptionsI = {};
+  private presets: {[propName: string]: any};
  // private tourStart = TourDefaultEvents.tourStart;
   private tourBreak = TourDefaultEvents.tourBreak;
   private tourEnd = TourDefaultEvents.tourEnd;
@@ -227,11 +230,14 @@ export class TourService {
       this.lang = ''
     }
   }
+  private validateTour(tour: Tour): void | never {
+    this.validateOptions(tour);
+  }
 
-  private validateOptions(tour: TourI): boolean {
+  private validateOptions(tour: Tour): void | never {
     const regExpr = /^top$|^down$|^left$|^right$|^center$|^right-center$|^left-center$|^right-top$|^left-top$/i;
     let isValid = true;
-    tour.steps.forEach((step: TourStepI) => {
+    tour.steps.forEach((step: TourStep) => {
       if (step.options && step.options.placement) {
         isValid = regExpr.test(step.options.placement);
       }
@@ -239,9 +245,12 @@ export class TourService {
     if (tour.tourOptions && tour.tourOptions.placement) {
       isValid = regExpr.test(tour.tourOptions.placement);
     }
-    return isValid;
+    if (!isValid) {
+      throw Error('Placement option of the ng3-tour or one of it step is invalid');
+    }
   }
-  private setSteps(tour: TourI): void {
+
+  private setSteps(tour: Tour): void {
     const options = new StepOptions({...defaultOptions, ...this.presets, ...tour.tourOptions});
     this.steps = tour.steps.map((x, i) => {
       x.index = i;
@@ -253,7 +262,7 @@ export class TourService {
       }
       x.options = x.options ? {...options, ...x.options} : options;
       x.total = tour.steps.length;
-      x.ctrlBtns = this.defineLocalBtnNames(tour.ctrlBtns || defaultCtrlBtns)
+      x.ctrlBtns = this.defineDefaultNames(tour.ctrlBtns || defaultTranslation)
       return x;
     });
     if (isDevMode()) {
@@ -286,7 +295,7 @@ export class TourService {
     return 'Error'
   }
 
-  private defineLocalBtnNames(btns: CtrlBtnsI): CtrlBtnsI {
+  private defineDefaultNames(btns: CtrlBtns): CtrlBtns {
     const btnCtrls = {};
     for (let prop in btns) {
       if (btns.hasOwnProperty(prop)) {
@@ -314,6 +323,7 @@ export class TourService {
     }
     return btnCtrls;
   }
+
   private initStep(step: number): void {
     const previousStep = this.history.length ? this.getLastStep() : {route: null};
     const newtStep = this.steps[step];
@@ -328,20 +338,20 @@ export class TourService {
   public getHistory() {
     return this.history;
   }
-  public setPresets(presets: StepOptionsI): void {
-    this.presets = {...this.presets, ...presets};
+  public setPresets(presets: {customTemplate: boolean}): void {
+    this.presets = {...presets};
   }
-  public resetStep(stepName: string | number, step: TourStepI) {
+  public resetStep(stepName: string | number, step: TourStep) {
     const index = typeof stepName === 'number' ? stepName : this.getStepByName(stepName).index;
     this.steps[index] = {...step};
   }
-  public getStepByName(stepName: string): TourStepI {
+  public getStepByName(stepName: string): TourStep {
     return this.steps.filter(step => step.stepName === stepName)[0];
   }
-  public getStepByIndex(index = 0): TourStepI {
+  public getStepByIndex(index = 0): TourStep {
     return this.steps[index];
   }
-  public getLastStep(): TourStepI {
+  public getLastStep(): TourStep {
     if (this.history.length) return this.steps[this.history.slice(-1)[0]];
     return null;
   }
@@ -357,19 +367,17 @@ export class TourService {
   public getTourStatus() {
     return this.tourStarted;
   }
-  public startTour(tour: TourI) {
-    if (!this.validateOptions(tour)) {
-      throw new Error('Placement option of the ng3-tour or one of it step is invalid');
-    }
+  public startTour(tour: Tour): void {
+    this.validateTour(tour);
     const {tourBreak, tourStart, tourEnd, next, prev} = {...TourDefaultEvents, ...tour.tourEvents};
     tourStart({tourEvent: 'Tour start', tour});
     this.tourBreak = tourBreak;
     this.tourEnd = tourEnd;
     this.next = next;
     this.prev = prev;
-    this.setTourStatus(true);
     this.setSteps(tour);
     this.initStep(0);
+    this.setTourStatus(true);
   }
   public stopTour() {
     const index = this.getLastStep().index;

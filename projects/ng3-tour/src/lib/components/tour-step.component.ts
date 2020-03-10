@@ -8,7 +8,6 @@ import { Component,
   OnDestroy,
   ViewEncapsulation,
   ElementRef,
-  ViewContainerRef
 } from '@angular/core';
 import {isPlatformBrowser} from '@angular/common';
 import {Observable, Subject} from 'rxjs';
@@ -16,12 +15,11 @@ import {map, takeUntil} from 'rxjs/operators';
 
 import {
   TourService,
-  TourStepI,
+  TourStep,
 } from '../services/tour.service';
-import {StepSizeI, StepTargetService} from '../services/step-target.service';
+import {TargetSize, StepTargetService} from '../services/step-target.service';
 
-
-export interface StepEventsI {
+export interface StepEvents {
   onNext($event: Event): void;
   onPrev($event: Event): void;
   onClose($event: Event): void;
@@ -36,12 +34,12 @@ export interface StepEventsI {
   exportAs: 'steps$',
 })
 
-export class TourStepComponent implements OnInit, OnDestroy, StepEventsI {
+export class TourStepComponent implements OnInit, OnDestroy, StepEvents {
   class: string;
   targetElement: Element;
-  target: StepSizeI;
-  currentStep: TourStepI = null;
-  steps$: Observable<TourStepI> = null;
+  target: TargetSize;
+  currentStep: TourStep = null;
+  steps$: Observable<TourStep> = null;
   isBrowser: boolean;
   onDestroy = new Subject<any>();
   timeouts: any[] = [];
@@ -72,7 +70,7 @@ export class TourStepComponent implements OnInit, OnDestroy, StepEventsI {
   @HostListener('window:resize', ['$event']) onResize(event: Event) {
     if (this.target && this.currentStep) {
       this.saveTarget(this.targetElement);
-      this.defineStepPlacement();
+      this.defineStepPlacementToTarget();
     }
   }
   ngOnInit() {
@@ -154,20 +152,42 @@ export class TourStepComponent implements OnInit, OnDestroy, StepEventsI {
       ? (step ? 'animation-on' : 'fade-on')
       : (step ? '' : 'fade-on');
     this.class = `${arrowClass} ${className} pos-${placement} ${animationClass}`.trim();
+    if (step) {
+      this.class +=  ` ${step.stepName}`
+    }
   }
   private saveTarget(target: Element): void {
     this.target = this.stepTargetService.resizeTarget(
     this.stepTargetService.getSizeAndPosition(target), this.currentStep.options.stepTargetResize);
-    this.timeouts[this.timeouts.length] = setTimeout(() => this.defineStepPlacement(), 0);
+    this.timeouts[this.timeouts.length] = setTimeout(() => this.defineStepPlacementToTarget(), 0);
   }
   private saveStepData(): void {
     this.resetClasses();
     this.targetBackground = 'transparent';
   }
-  private defineStepPlacement() {
-    const modal = document.querySelector('.tour-step-modal');
+
+  private defineStepPlacementToWindow(placement: string, modalWidth: number) {
+    if (/^right-center$/i.test(placement)) {
+      this.stepModalPosition = {
+        right: 50,
+        top: Math.round(window.innerHeight / 2 - this.modalHeight / 2)
+      };
+    } else if (/^left-center$/i.test(placement)) {
+      this.stepModalPosition = {
+        left: 50,
+        top: Math.round(window.innerHeight / 2 - this.modalHeight / 2)
+      };
+    } else if (/^center$/i.test(placement)) {
+      this.stepModalPosition = {
+        left: Math.round(window.innerWidth / 2 - modalWidth / 2),
+        top: Math.round(window.innerHeight / 2 - this.modalHeight / 2)
+      };
+    }
+  }
+  private defineStepPlacementToTarget() {
+    const modal = this.elem.nativeElement.querySelector('.tour-step-modal');
     if (!modal) {
-      this.timeouts[this.timeouts.length] = setTimeout(() => this.defineStepPlacement(), 100);
+      this.timeouts[this.timeouts.length] = setTimeout(() => this.defineStepPlacementToTarget(), 100);
       return;
     }
     const modalRect = modal.getBoundingClientRect();
@@ -191,21 +211,8 @@ export class TourStepComponent implements OnInit, OnDestroy, StepEventsI {
       this.stepModalPosition = {
         left: right + width + 20, top: top - this.modalHeight + 50
       };
-    } else if (/^right-center$/i.test(placement)) {
-      this.stepModalPosition = {
-        right: 50,
-        top: Math.round(window.innerHeight / 2 - this.modalHeight / 2)
-      };
-    } else if (/^left-center$/i.test(placement)) {
-      this.stepModalPosition = {
-        left: 50,
-        top: Math.round(window.innerHeight / 2 - this.modalHeight / 2)
-      };
-    } else if (/^center$/i.test(placement)) {
-      this.stepModalPosition = {
-        left: Math.round(window.innerWidth / 2 - modalWidth / 2),
-        top: Math.round(window.innerHeight / 2 - this.modalHeight / 2)
-      };
+    } else {
+      this.defineStepPlacementToWindow(placement, modalWidth);
     }
     if (this.currentStep.options.autofocus) {
       this.setFocus(modal);

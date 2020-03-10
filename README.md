@@ -55,7 +55,8 @@ export class AppModule { }
 
 5. Inject NgTourService in your Component (where Tour is being started).
 
-```
+```import {TourService, Tour, StepOptions, TourEvents} from 'ng3-tour';
+
     @Component({
         selector: 'component-of-your-choice',
         templateUrl: './your.component.html'
@@ -68,18 +69,17 @@ export class AppModule { }
 6. Create a configuration object and pass it as an argument to the startTour method
 
 ```
-const tour = {
+const tour: Tour = {
     steps: [
         {
             stepName: "first",
-            route: "home",
+            route: "first-feature",
             title: 'My first lazily loaded feature',
             description: "My first feature description", 
-            options: {backdrop: true}
         },
         {
             stepName: "nextStep",
-            route: "about",
+            route: "second-feature",
             title: "My second lazily loaded feature",
             description: "My second feature description",
             options:{placement: 'top', smoothScroll: true}
@@ -87,6 +87,7 @@ const tour = {
     ],
     tourOptions: {
         backdrop: false,
+        placement: 'right',
     }
 }
 ```
@@ -112,60 +113,61 @@ onClick() {
 If you want to use tour own Step template wrap it with `<ng-tour-step-template>` and place in **app.component.html**.  Mark the provided template with reference with assigned value 'step$' that gives you access to steps Stream. To handle controls event you could use tourEvent directive with corresponded input value (one of 'next', 'prev', 'close') 
 
 ```
-<ng-tour-step-template #refToExportAs="steps$" tourStepData (next)="onNext($event)" (done)="onDone($event)">
+<ng-tour-step-template #refToExportAs="steps$">
     <div  class="tour-step-modal__content" *ngIf="refToExportAs.steps$ | async as step">
         <div >
             <div class="tour-step-modal__header">
                 <h3 class="tour-step-modal__title"> 
-                {{step.title}}
+                    {{step.title}}
                 </h3>
-                <button class="tour-btn-close" type="button" stepEvent="close" (break)="onBreak($event)" (done)="onDone($event)">
-                &times;
+                <button
+                    class="tour-btn-close"
+                    type="button"
+                    stepEvent="close"
+                    (break)="onBreak($event)" // add this line if you want to handle the event is emitted after a corresponded user action. Of cause, the handler's name is up to you.
+                    (done)="onDone($event)" // to handle the event is emitted after a corresponded user action
+                >
+                    &times;
                 </button>
             </div>
             <div class="tour-step-modal__body">
                 <p class="tour-step-modal__description">
-                {{step.description}}
+                    {{step.description}}
                 </p>
                 <p class="tour-step-modal__adds">
-                {{step.adds}}
-                </p>
-                <p class="tour-step-modal__adds">
-                {{step.customData}}
-                </p>
-                <p *ngIf="step.index===3" class="tour-step-modal__adds"> 
-                StepName of this step is {{step.StepName}}
+                    {{step.customData}}
                 </p>
             </div>
             <div class="tour-step-modal__footer">
                 <div *ngIf="!step.options.withoutCounter" class="tour-step-modal__counter">
-                {{step.index + 1}} of {{step.total}}
+                    {{step.index + 1}} {{step.ctrlBtns.of} {{step.total}}
                 </div>
                 <button
-                *ngIf="!step.options.withoutPrev && step.index" 
-                type="button" 
-                class="tour-btn"
-                stepEvent="prev"
+                    *ngIf="!step.options.withoutPrev && step.index" 
+                    type="button" 
+                    class="tour-btn"
+                    stepEvent="prev"
+                    (prev)="onPrev($event)" // to handle the event is emitted after a corresponded user action
                 >
-                {{step.ctrlBtns.prev}}
+                    {{step.ctrlBtns.prev}}
                 </button>
                 <button
-                *ngIf="step.index + 1 !== step.total"
-                type="button"
-                class="tour-btn tour-btn-next"
-                stepEvent="next"  
-                (next)="onNext($event)"
+                    *ngIf="step.index + 1 !== step.total"
+                    type="button"
+                    class="tour-btn tour-btn-next"
+                    stepEvent="next"  
+                    (next)="onNext($event)" // to handle the event is emitted after a corresponded user action
                 >
-                {{step.ctrlBtns.next}}
+                    {{step.ctrlBtns.next}}
                 </button>
                 <button
-                *ngIf="step.index + 1 === step.total"
-                type="button"
-                class="tour-btn tour-btn-done"
-                stepEvent="close"
-                (done)="onDone($event)"
+                    *ngIf="step.index + 1 === step.total"
+                    type="button"
+                    class="tour-btn tour-btn-done"
+                    stepEvent="close"
+                    (done)="onDone($event)" // to handle the event is emitted after a corresponded user action
                 >
-                {{step.ctrlBtns.done}}
+                    {{step.ctrlBtns.done}}
                 </button>
             </div>
         </div>
@@ -191,22 +193,27 @@ title: {
 You also can define t he required translations for the Step controls. Simply pass the corresponded object to the Tour option ctrlBtns. There is default value below.
 
 ```   
-ctrlBtns: {
-  done: {
-   'en-EN': 'done',
-   'ru-RU': 'закр',
-   'fr-FR': 'fini',
-  },
-  prev: {
-    'en-EN': 'prev',
-    'ru-RU': 'пред',
-    'fr-FR': 'préc'
-  },
-  next: {
-    'en-EN': 'next',
-    'ru-RU': 'след',
-    'fr-FR': 'proch',
-  },
+defaultTranslation {
+    done: {
+        'en-EN': 'done',
+        'ru-RU': 'закр',
+        'fr-FR': 'fini',
+    },
+    prev: {
+        'en-EN': 'prev',
+        'ru-RU': 'пред',
+        'fr-FR': 'préc'
+    },
+    next: {
+        'en-EN': 'next',
+        'ru-RU': 'след',
+        'fr-FR': 'proch',
+    },
+    of: {
+        'en-EN': 'of',
+        'ru-RU': "из",
+        'fr-FR': 'de',
+    }
 }
 ``` 
 
@@ -214,26 +221,27 @@ ctrlBtns: {
 
 ### Tour Properties
 Tour configuration object contains steps array and could include common options, event handlers and set of control button names
-Name | Required | Type | Destination 
------|----|----|--------|
-steps | yes | TourStep[] | This option define Tour Steps and its order | 
-tourEvents | no | TourEventsI | define event handlers for 'tour start', 'tour break', 'tour end', 'next step', 'prev step' | 
-tourOption | no | TourStepI | Set common options. Could be redefined with Step options
-ctrlBtns | no | CtrlBtnsI | Set translations of the control buttons for any languages you want
 
-### Tour Events
+Name | Required | Type | Destination 
+-----|----|----|--------
+steps | yes | TourStep[] | This option define Tour Steps and its order | 
+tourEvents | no | TourEvents | define event handlers for 'tour start', 'tour break', 'tour end', 'next step', 'prev step' | 
+tourOption | no | TourStep | Set common options. Could be redefined with Step options
+ctrlBtns | no | CtrlBtns | Set translations of the control buttons for any languages you want
+
+#### Tour Events
 These events are functions witch is called within corresponded tourService methods. You can pass your own implementation of these functions within tourEvent property for example to collect some statistical data about user behavior. Keep in mind Tour Events unlike Step Events could fire without user activity in case continueIfTargetAbsent property is set to true (default value).
 
-Name | Required | Props | Description | 
------|----|----|------------|----
-tourStart | no | {tourEvent: string, tour?: TourI} | Add logic executed before the Tour will be started | 
+Name | Required | Props | Description  
+-----|----|----|------------
+tourStart | no | {tourEvent: string, tour?: Tour} | Add logic executed before the Tour will be started | 
 tourBreak | no | {tourEvent: string, step?: number, history?: number[]} | Add logic executing before the Tour will be stoped untimely
 tourEnd | no | {tourEvent: string, step?: number, history?: number[]} | Add logic executing before the Tour will be stopped after finishing (latest step was visited)
 next | no | {tourEvent: string, step?: number, history?: number[]} | Add logic executing before the next step will be initiated
 prev | no | {tourEvent: string, step?: number, history?: number[]} | Add logic executing before the previous step will be initiated
 
 
-### Step Properties (StepOptions)
+### Step Properties
 Name | Required | Type | Destination | Default value
 -----|---|----|-----|---
 stepName | yes | string | Define unique name of the Step | 
@@ -241,8 +249,8 @@ route | yes | string | Define route corresponded to the Step |
 index | no | number |  'Index' value is set by TourService service according to the position of the Step in the Steps array | 
 title | no | string | Set title of the current Step | ""
 description | no | string | Set description of the current Step | ""
-ctrlBtns | no | CtrlBtnsI | Set translations of the control buttons for any languages you want | [see below] (#defaultCtrlBtns)
-options | no | StepOptionsI | To customize separate Step | described below
+ctrlBtns | no | CtrlBtns | Set translations of the control buttons for any languages you want | [see below] (#defaultCtrlBtns)
+options | no | StepOptions | To customize separate Step | described below
 options: | | | |
 className | no | string | Set custom class to the Step component | ""
 themeColor| no | string | Define theme color | 'rgb(20, 60, 60)'
@@ -259,7 +267,7 @@ continueIfTargetAbsent | no | boolean | If true and the Step target is absent wi
 animatedStep | no | boolean | If true add classes to control css animation | true
 fixed | no | boolean | If value equals true position css property of the Step Component and Backdrop Component is set to the 'fixed', otherwise 'absolute' | false
 animationDelay | no | number | Required in case of routing with lazy loaded Feature Modules. Delay defined in ms | 500
-targetResize | no | number[] | Change size in px of the Step target window. Number with index 0 define Width. Number with index 1 if exist define Height differ from the Width | [0]
+stepTargetResize | no | number[] | Change size in px of the Step target window. Number with index 0 define Width. Number with index 1 if exist define Height differ from the Width | [0]
 minWidth | no | string | Define min-width of the Step modal | '200px'
 minHeight | no | string | Define min-height of the Step modal | '200px'
 maxWidth | no | string | Define max-width of the Step modal | '400px'
@@ -267,40 +275,20 @@ maxHeight | no | string | Define max-height of the Step modal | '400px'
 autofocus | no | boolean | If true 'next' and 'done' buttons obtain focus | true
 closeOnClickOutside | no | boolean |If true any click outside step modal will cause closing the Tour. This is maybe useful if you set backdrop options to false and user have access to your site controls (for example navigation menu) | false
 
-#### DefaultCtrlBtns: 
-
-    {
-        done: {
-        'en-EN': 'done',
-        'ru-RU': 'закр',
-        'fr-FR': 'fini',
-        },
-        prev: {
-            'en-EN': 'prev',
-            'ru-RU': 'пред',
-            'fr-FR': 'préc'
-        },
-        next: {
-            'en-EN': 'next',
-            'ru-RU': 'след',
-            'fr-FR': 'proch',
-        },
-    }
-
 
 ### Services
 
 #### TourService methods: 
 Name | Args |  Description | Return
 -----|------|------|-----
-main | | |
-startTour | tour: TourI | start Tour (The only necessary to use this lib) | void |
+main: | | |
+startTour | tour: Tour | start Tour (The only necessary to use this lib) | void |
 prevStep | | Call initStep with previous stepName | void 
 nextStep | | Call initStep with next stepName | void 
 stopTour | | stop Tour | void 
-additional | | |
-getStepStream | | Return the steps observable
-resetStep | string | number, TourStepI | Change Step configuration
+additional: | | |
+getStepsStream | | Return the steps observable
+resetStep | string | number, TourStep | Change Step configuration
 getHistory | | return array of the indexes of the passed Steps
 getStepByName | string | return the Step with the given stepName
 getStepByIndex | number | return the Step with the given index
@@ -316,12 +304,14 @@ This directive is similar to a structural one if it is used solo without `<ng-to
 
 #### ngTourStep 
 This directive is required to mark Step target
+
 @Input	| Required | Description | Values/Type
 --------|----------|-------------|-------------
 ngTourStep | yes | The value should be unique string | string
 
 #### stepEvent
 This directive binds listeners (with corresponded Tour methods) to Step's controls and emits corresponded events. It may come in handy if you want **to master your own Step template**.
+
 @Input	| Required | Destination
 --------|----------|-------|-------------
 stepEvent | required | Possible values are 'next' , 'prev' and 'close'. Value predefines which handler will be implemented for the click event. 
