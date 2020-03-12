@@ -313,7 +313,7 @@ ngTourStep | yes | The value should be unique string | string
 This directive binds listeners (with corresponded Tour methods) to Step's controls and emits corresponded events. It may come in handy if you want **to master your own Step template**.
 
 @Input	| Required | Destination
---------|----------|-------|-------------
+--------|----------|-------
 stepEvent | required | Possible values are 'next' , 'prev' and 'close'. Value predefines which handler will be implemented for the click event. 
 
 @Output	| Props | Destination
