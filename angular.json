@@ -9,7 +9,7 @@
       "projectType": "library",
       "prefix": "lib",
       "architect": {
-        "build": {
+        "build": {          
           "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
             "tsConfig": "projects/ng3-tour/tsconfig.lib.json",
@@ -17,7 +17,6 @@
           }
         },
         "test": {
-          "builder": "@angular-devkit/build-angular:karma",
           "options": {
             "main": "projects/ng3-tour/src/test.ts",
             "tsConfig": "projects/ng3-tour/tsconfig.spec.json",
