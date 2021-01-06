@@ -33,7 +33,7 @@ import {StepEventsDirective} from './directives/step-events.directive';
   ]
 })
 export class AngularTourModule {
-  static forRoot(): ModuleWithProviders {
+  static forRoot(): ModuleWithProviders<AngularTourModule> {
     return {
       ngModule: AngularTourModule,
       providers: [
@@ -42,7 +42,7 @@ export class AngularTourModule {
       ]
     };
   }
-  static forChild(): ModuleWithProviders {
+  static forChild(): ModuleWithProviders<AngularTourModule> {
     return {
         ngModule: AngularTourModule,
         providers: []

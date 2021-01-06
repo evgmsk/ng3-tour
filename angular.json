@@ -15,7 +15,12 @@
             "tsConfig": "projects/ng3-tour/tsconfig.lib.json",
             "project": "projects/ng3-tour/ng-package.json"
           }
-        },
+        ,          "configurations": {
+            "production": {
+              "tsConfig": "projects/ng3-tour/tsconfig.lib.prod.json"
+            }
+          }
+},
         "test": {
           "options": {
             "main": "projects/ng3-tour/src/test.ts",
