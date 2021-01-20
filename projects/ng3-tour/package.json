@@ -10,6 +10,9 @@
   "author": "evgmsk",
   "license": "MIT",
   "homepage": "https://github.com/evgmsk/ng3-tour#readme",
+  "dependencies": {
+    "tslib": "^2.0.0"
+  },
   "peerDependencies": {
     "@angular/core": ">=4.0.0",
         "@angular/common": ">=4.0.0",
