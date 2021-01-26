@@ -1,15 +1,12 @@
 <div class="tour-step-wrapper" *ngIf="steps$ | async as step" [ngClass]="class">
   <ng-tour-step-back
     *ngIf="step.options.backdrop && target"
-    [themeColor]="step.options.themeColor"
-    [stepBackSize]="target"
-    [position]="step.options.fixed ? 'fixed' : 'absolute'"
-    [targetBackground]="targetBackground"
-    [opacity]="step.options.opacity"
+    [props]="backdropProps"
   >
   </ng-tour-step-back>
   <div
     *ngIf="currentStep"
+    #modal
     class="tour-step-modal"
     [style.max-width]="step.options.maxWidth"
     [style.max-height]="step.options.maxHeight"

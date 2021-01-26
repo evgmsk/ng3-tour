@@ -1,10 +1,11 @@
 import { Directive, Input, Inject, PLATFORM_ID, AfterViewInit, OnDestroy, ElementRef} from '@angular/core';
 import {isPlatformBrowser} from '@angular/common';
 import {Subscription, Subject} from 'rxjs';
-import {map, takeUntil} from 'rxjs/operators';
+import {map, takeUntil, delay} from 'rxjs/operators';
 
 import {StepTargetService} from '../services/step-target.service';
 import {TourService} from '../services/tour.service';
+import {Steps} from '../interfaces/step.interface';
 
 // @dynamic
 @Directive({
@@ -16,10 +17,12 @@ export class TourStepDirective implements AfterViewInit, OnDestroy {
   subscription: Subscription;
   isBrowser: boolean;
   timeout: any;
+  Delay: number;
   constructor(
     private elemRef: ElementRef,
     private readonly tour: TourService,
     private readonly stepTarget: StepTargetService,
+    
     // @dynamic
     @Inject(PLATFORM_ID) platformId: {}) {
       this.isBrowser = isPlatformBrowser(platformId);
@@ -31,19 +34,19 @@ export class TourStepDirective implements AfterViewInit, OnDestroy {
     }
     this.tour.getStepsStream().pipe(
       takeUntil(this.onDestroy),
-      map((stepName: string) => {
-        if (!stepName || this.name !== stepName) {
-          return stepName;
+      map((step: Steps) => {
+        if (!step.stepName || this.name !== step.stepName) {
+          return step;
         } else {
-          const target = this.elemRef.nativeElement;
-          const delay = this.tour.isRouteChanged()
-            ? this.tour.getStepByName(stepName).options.delay
+          this.Delay = this.tour.isRouteChanged()
+            ? this.tour.getStepByName(step.stepName).options.delay
             : 0;
-          this.timeout = setTimeout(() => this.stepTarget.setTargetSubject({target, stepName}), delay);
-          return stepName;
+          step.stepTarget = this.elemRef.nativeElement;
+          // this.stepTarget.setTargetSubject({target, step})
+          return step;
         }
       }
-    )).subscribe();
+    ), delay(this.Delay)).subscribe();
   }
   ngOnDestroy() {
     this.onDestroy.next();

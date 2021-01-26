@@ -3,55 +3,15 @@ import {isPlatformBrowser} from '@angular/common'
 import {BehaviorSubject, Observable} from 'rxjs';
 import {Router} from '@angular/router';
 
-import {StepTargetService} from './step-target.service';
-
-export interface Tour {
-  steps: TourStep[];
-  tourOptions?: StepOptions;
-  withoutLogs?: boolean;
-  tourEvents?: TourEvents;
-  ctrlBtns?: CtrlBtns;
-}
-
-export interface TourStep {
-  stepName: string;
-  route?: string;
-  index?: number;
-  title?: string | {[propName: string]: any};
-  description?: string | {[propName: string]: any};
-  options?: StepOptions;
-  ctrlBtns?: CtrlBtns;
-  [propName: string]: any;
-}
-
-export interface CtrlBtns {
-  prev?: {[propsName: string]: any};
-  next?: {[propsName: string]: any};
-  done?: {[propsName: string]: any};
-  [propsName: string]: any;
-}
-
-
-// export const defaultInternalization = {
-//   "en": {
-//     "done": "done",
-//     "prev": "prev",
-//     "next": "next",
-//     "of": "of"
-//   },
-//   "fr": {
-//     "done": "fini",
-//     "prev": "préc",
-//     "next": "proch",
-//     "of": "de"
-//   },
-//   "ru": {
-//     "done": "закр",
-//     "prev": "пред",
-//     "next": "след",
-//     "of": "из"
-//   }
-// }
+import {
+  Tour,
+  TourEvent,
+  TourEvents,
+  CtrlBtns,
+  TourStep,
+} from '../interfaces/tour.interface';
+import {Steps, setTourProps} from '../interfaces/step.interface'
+import { TargetWindowSize } from '../interfaces/backdrop.interface';
 
 export const defaultTranslation = {
   done: {
@@ -76,119 +36,6 @@ export const defaultTranslation = {
   }
 }
 
-export const defaultOptions: StepOptions = {
-  className: '',
-  continueIfTargetAbsent: true,
-  withoutCounter: false,
-  withoutPrev: false,
-  customTemplate: false,
-  smoothScroll: false,
-  scrollTo: true,
-  themeColor: 'rgb(20, 60, 60)',
-  opacity: .7,
-  placement: 'down',
-  arrowToTarget: true,
-  stepTargetResize: [0],
-  delay: 1000,
-  animatedStep: true,
-  fixed: false,
-  backdrop: true,
-  minWidth: '250px',
-  minHeight: '150px',
-  maxWidth: '400px',
-  maxHeight: '600px',
-  autofocus: true,
-  closeOnClickOutside: false,
-};
-
-export class StepOptions {
-  className?: string;
-  withoutCounter?: boolean;
-  withoutPrev?: boolean;
-  customTemplate?: boolean;
-  themeColor?: string;
-  opacity?: number;
-  placement?: string;
-  arrowToTarget?: boolean;
-  backdrop?: boolean;
-  animatedStep?: boolean;
-  smoothScroll?: boolean;
-  scrollTo?: boolean;
-  continueIfTargetAbsent?: boolean;
-  stepTargetResize?: number[];
-  delay?: number;
-  fixed?: boolean;
-  minWidth?: string;
-  minHeight?: string;
-  maxWidth?: string;
-  maxHeight?: string;
-  autofocus?: boolean;
-  closeOnClickOutside?: boolean;
-  constructor(options = defaultOptions) {
-    const {
-      className,
-      continueIfTargetAbsent,
-      withoutCounter,
-      withoutPrev,
-      customTemplate,
-      smoothScroll,
-      scrollTo,
-      themeColor,
-      opacity,
-      placement,
-      arrowToTarget,
-      stepTargetResize,
-      maxHeight,
-      maxWidth,
-      minHeight,
-      minWidth,
-      delay,
-      animatedStep,
-      fixed,
-      backdrop,
-      autofocus,
-      closeOnClickOutside,
-    } = options;
-    this.className = className;
-    this.placement = placement;
-    this.arrowToTarget = arrowToTarget;
-    this.themeColor = themeColor;
-    this.opacity = opacity;
-    this.backdrop = backdrop;
-    this.customTemplate = customTemplate;
-    this.withoutCounter = withoutCounter;
-    this.withoutPrev = withoutPrev;
-    this.continueIfTargetAbsent = continueIfTargetAbsent;
-    this.stepTargetResize = stepTargetResize;
-    this.maxHeight = maxHeight;
-    this.maxWidth = maxWidth;
-    this.minHeight = minHeight;
-    this.minWidth = minWidth;
-    this.delay = delay;
-    this.animatedStep = animatedStep;
-    this.smoothScroll = smoothScroll;
-    this.scrollTo = scrollTo;
-    this.fixed = fixed;
-    this.autofocus = autofocus;
-    this.closeOnClickOutside = closeOnClickOutside
-  }
-}
-
-export type TourEvent =  (props: {
-  tourEvent: string,
-  step?: number | string,
-  history?: number[],
-  tour?: Tour,
-}) => void;
-
-export interface TourEvents {
-  tourStart?: TourEvent;
-  tourEnd?: TourEvent;
-  tourBreak?: TourEvent;
-  next?: TourEvent;
-  prev?: TourEvent;
-}
-
 export const defaultTourEvent: TourEvent = (props) => {};
 
 export const TourDefaultEvents = {
@@ -204,31 +51,26 @@ export const TourDefaultEvents = {
 export class TourService {
   private steps: TourStep[];
   private tourStarted = false;
-  private stepsStream$ = new BehaviorSubject<any>(null);
+  private stepsStream$ = new BehaviorSubject<Steps>({stepName: null});
   private history = [];
   private routeChanged = false;
   private presets: {[propName: string]: any};
  // private tourStart = TourDefaultEvents.tourStart;
-  private tourBreak = TourDefaultEvents.tourBreak;
-  private tourEnd = TourDefaultEvents.tourEnd;
-  private next = TourDefaultEvents.next;
-  private prev = TourDefaultEvents.prev;
+  private tourBreak = defaultTourEvent;
+  private tourEnd = defaultTourEvent;
+  private next = defaultTourEvent;
+  private prev = defaultTourEvent;
   private isBrowser: boolean;
   private lang: string;
   constructor(
     private router: Router,
-    private readonly targetService: StepTargetService,
     // @dynamic
     @Inject(PLATFORM_ID) platformId: {}) {
     this.nextStep = this.nextStep.bind(this);
     this.prevStep = this.prevStep.bind(this);
     this.stopTour = this.stopTour.bind(this);
     this.isBrowser = isPlatformBrowser(platformId);
-    if (this.isBrowser) {
-      this.lang = navigator.language;
-    } else {
-      this.lang = ''
-    }
+    this.lang = this.isBrowser ? navigator.language : '';
   }
   private validateTour(tour: Tour): void | never {
     this.validateOptions(tour);
@@ -238,12 +80,12 @@ export class TourService {
     const regExpr = /^top$|^down$|^left$|^right$|^center$|^right-center$|^left-center$|^right-top$|^left-top$/i;
     let isValid = true;
     tour.steps.forEach((step: TourStep) => {
-      if (step.options && step.options.placement) {
-        isValid = regExpr.test(step.options.placement);
+      if (step.options && step.options.modalProps.placement) {
+        isValid = regExpr.test(step.options.modalProps.placement);
       }
     });
-    if (tour.tourOptions && tour.tourOptions.placement) {
-      isValid = regExpr.test(tour.tourOptions.placement);
+    if (tour.tourOptions && tour.tourOptions.modalProps.placement) {
+      isValid = regExpr.test(tour.tourOptions.modalProps.placement);
     }
     if (!isValid) {
       throw Error('Placement option of the ng3-tour or one of it step is invalid');
@@ -251,7 +93,7 @@ export class TourService {
   }
 
   private setSteps(tour: Tour): void {
-    const options = new StepOptions({...defaultOptions, ...this.presets, ...tour.tourOptions});
+    const options = setTourProps(tour.tourOptions);
     this.steps = tour.steps.map((x, i) => {
       x.index = i;
       if (x.description && typeof x.description === 'object') {
@@ -326,14 +168,15 @@ export class TourService {
 
   private initStep(step: number): void {
     const previousStep = this.history.length ? this.getLastStep() : {route: null};
-    const newtStep = this.steps[step];
-    this.routeChanged = previousStep.route !== newtStep.route;
+    const newStep = this.steps[step];
+    this.routeChanged = previousStep.route !== newStep.route;
     this.history.push(step);
-    if (newtStep.route && this.routeChanged) {
-      this.router.navigate([newtStep.route]);
+    if (newStep.route && this.routeChanged) {
+      this.router.navigate([newStep.route]);
     }
-    this.stepsStream$.next(newtStep.stepName);
+    this.stepsStream$.next({stepName: newStep.stepName});
   }
+
 
   public getHistory() {
     return this.history;
@@ -355,7 +198,7 @@ export class TourService {
     if (this.history.length) return this.steps[this.history.slice(-1)[0]];
     return null;
   }
-  public getStepsStream(): Observable<string> {
+  public getStepsStream(): Observable<Steps> {
     return this.stepsStream$;
   }
   public isRouteChanged() {
@@ -391,7 +234,6 @@ export class TourService {
     this.steps.length = 0;
     this.stepsStream$.next(null);
     this.history.length = 0;
-    this.targetService.setTargetSubject(null);
   }
   public nextStep() {
     const step = this.getLastStep().index + 1;
@@ -402,5 +244,38 @@ export class TourService {
     const step = this.getLastStep().index - 1;
     this.prev({tourEvent: 'Init prev', step, history: this.history});
     this.initStep(step);
+  }
+  public maxHeight() {
+    return Math.round(Math.max(
+      document.body.scrollHeight,
+      document.documentElement.scrollHeight,
+      document.body.offsetHeight,
+      document.documentElement.offsetHeight,
+      document.body.clientHeight,
+      document.documentElement.clientHeight,
+      window.innerHeight
+    ));
+  }
+  public getSizeAndPosition(el: Element) {
+    const targetRect = el.getBoundingClientRect();
+    const bodyRect = document.body.getBoundingClientRect();
+    const top = Math.round(targetRect.top - bodyRect.top);
+    const left = Math.round(targetRect.left - bodyRect.left);
+    const bottom = Math.round(targetRect.bottom - bodyRect.top);
+    const right = Math.round(targetRect.left - bodyRect.left);
+    const height = Math.round(targetRect.height || bottom - top);
+    const width = Math.round(targetRect.width || right - left);
+    const pageHeight = this.maxHeight();
+    return {top, left, bottom, right, width, height, pageHeight};
+  }
+
+  public resizeTarget(target: TargetWindowSize, size: number[]): TargetWindowSize {
+    target.left -= size[0];
+    target.right += size[0];
+    target.top -= size[1] || size[0];
+    target.bottom += size[1] || size[0];
+    target.width += 2 * size[0];
+    target.height += 2 * (size[1] || size[0]);
+    return target;
   }
 }
