@@ -9,10 +9,10 @@ export interface BackdropProps {
 }
 
 export interface TargetWindowSize {
-    top: number;
-    left: number;
-    bottom: number;
-    right: number;
+    top?: number;
+    left?: number;
+    bottom?: number;
+    right?: number;
     height?: number;
     width?: number;
     pageHeight?: number;

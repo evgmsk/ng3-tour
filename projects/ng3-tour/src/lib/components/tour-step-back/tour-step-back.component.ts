@@ -14,7 +14,7 @@ export class TourStepBackComponent implements OnInit {
   constructor() { }
 
   ngOnInit() {
-    console.log(this.props.targetWindowColor)
+    // console.log(this.props.targetWindowColor)
   }
 
 }

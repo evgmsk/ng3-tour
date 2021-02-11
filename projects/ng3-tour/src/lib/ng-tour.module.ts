@@ -6,7 +6,6 @@ import {TourStepComponent} from './components/tour-step.component';
 import {TourStepBackComponent} from './components/tour-step-back/tour-step-back.component';
 import {TourStepDirective} from './directives/tour-step.directive';
 import {TourRootDirective} from './directives/tour-root.directive';
-import {StepTargetService} from './services/step-target.service';
 import {TourService} from './services/tour.service';
 import {StepEventsDirective} from './directives/step-events.directive';
 
@@ -37,7 +36,6 @@ export class AngularTourModule {
     return {
       ngModule: AngularTourModule,
       providers: [
-          StepTargetService,
           TourService
       ]
     };

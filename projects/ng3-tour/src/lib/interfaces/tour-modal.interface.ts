@@ -12,14 +12,38 @@ export interface TourModalProps {
     verticalIndent?: number,
     withoutCounter?: boolean,
     withoutPrev?: boolean,
-    fixed?: boolean;
-    minWidth?: string;
-    minHeight?: string;
-    maxWidth?: string;
-    maxHeight?: string;
+    modalStyles?: ModalStyles,
     autofocus?: boolean;
-    arrowToTarget?: boolean,
-    position?: TourModalPosition
+    arrowToTarget?: boolean;
+    modalSize?: {modHeight: number, modWidth: number}
+    customTemplate?: boolean,
+    delay?: number,
+    animatedStep?: boolean,
+    smoothScroll?: boolean,
+    scrollTo?: boolean,
+    closeOnClickOutside?: boolean,
+    total?: number,
+}
+
+export interface ModalStyles {
+    "min-width"?: string;
+    "min-height"?: string;
+    "max-width"?: string;
+    "max-height"?: string;
+    position: string;
+    color?: string;
+    left?: string;
+    right?: string;
+    top?: string;
+    bottom?: string;
+}
+export const DefaultModalStyles = {
+    position: 'absolute',
+    "min-width": '250',
+    "min-height": '150',
+    "max-width": '400',
+    "max-height": '600',
+    color: '#121212',
 }
 
 export const DefaultModalProps = {
@@ -30,10 +54,12 @@ export const DefaultModalProps = {
     withoutPrev: false,
     arrowToTarget: true,
     placement: 'down',
-    fixed: false,
-    minWidth: '250px',
-    minHeight: '150px',
-    maxWidth: '400px',
-    maxHeight: '600px',
+    modalStyles: DefaultModalStyles,
+    customTemplate: false,
+    delay: 1000,
+    animatedStep: true,
+    smoothScroll: false,
+    scrollTo: false,
+    closeOnClickOutside: false,
     autofocus: true,
 }

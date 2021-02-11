@@ -5,53 +5,24 @@ import {Router} from '@angular/router';
 
 import {
   Tour,
-  TourEvent,
-  TourEvents,
   CtrlBtns,
   TourStep,
+  defaultTourEvent,
+  defaultTranslation,
+  TourDefaultEvents,
+  setTourProps,
+  StepSubject
 } from '../interfaces/tour.interface';
-import {Steps, setTourProps} from '../interfaces/step.interface'
+
 import { TargetWindowSize } from '../interfaces/backdrop.interface';
-
-export const defaultTranslation = {
-  done: {
-   'en-EN': 'done',
-   'ru-RU': 'закр',
-   'fr-FR': 'fini',
-  },
-  prev: {
-    'en-EN': 'prev',
-    'ru-RU': 'пред',
-    'fr-FR': 'préc'
-  },
-  next: {
-    'en-EN': 'next',
-    'ru-RU': 'след',
-    'fr-FR': 'proch',
-  },
-  of: {
-    'en-EN': 'of',
-    'fr-FR': 'de',
-    'ru-RU': "из",
-  }
-}
-
-export const defaultTourEvent: TourEvent = (props) => {};
-
-export const TourDefaultEvents = {
-  tourStart: defaultTourEvent,
-  tourEnd: defaultTourEvent,
-  tourBreak: defaultTourEvent,
-  next: defaultTourEvent,
-  prev: defaultTourEvent,
-};
 
  // @dynamic
 @Injectable()
 export class TourService {
   private steps: TourStep[];
   private tourStarted = false;
-  private stepsStream$ = new BehaviorSubject<Steps>({stepName: null});
+  private stepsStream$ = new BehaviorSubject<TourStep>(null);
+  private stepTargetStream$ = new BehaviorSubject<TourStep>(null);
   private history = [];
   private routeChanged = false;
   private presets: {[propName: string]: any};
@@ -69,6 +40,7 @@ export class TourService {
     this.nextStep = this.nextStep.bind(this);
     this.prevStep = this.prevStep.bind(this);
     this.stopTour = this.stopTour.bind(this);
+    this.getLang = this.getLang.bind(this);
     this.isBrowser = isPlatformBrowser(platformId);
     this.lang = this.isBrowser ? navigator.language : '';
   }
@@ -84,8 +56,8 @@ export class TourService {
         isValid = regExpr.test(step.options.modalProps.placement);
       }
     });
-    if (tour.tourOptions && tour.tourOptions.modalProps.placement) {
-      isValid = regExpr.test(tour.tourOptions.modalProps.placement);
+    if (tour.tourModalOptions && tour.tourModalOptions.placement) {
+      isValid = regExpr.test(tour.tourModalOptions.placement);
     }
     if (!isValid) {
       throw Error('Placement option of the ng3-tour or one of it step is invalid');
@@ -93,19 +65,22 @@ export class TourService {
   }
 
   private setSteps(tour: Tour): void {
-    const options = setTourProps(tour.tourOptions);
-    this.steps = tour.steps.map((x, i) => {
-      x.index = i;
-      if (x.description && typeof x.description === 'object') {
-        x.description = this.defineLocalName(x.description);
+    const {steps, ...restProps} = tour;
+    const tourOptions = setTourProps(restProps);
+    this.steps = {...tour}.steps.map((step, i) => {
+      step.index = i;
+      if (step.description && typeof step.description === 'object') {
+        step.description = this.defineLocalName(step.description);
       }
-      if (x.title && typeof x.title === 'object') {
-        x.title = this.defineLocalName(x.title)
+      if (step.title && typeof step.title === 'object') {
+        step.title = this.defineLocalName(step.title)
       }
-      x.options = x.options ? {...options, ...x.options} : options;
-      x.total = tour.steps.length;
-      x.ctrlBtns = this.defineDefaultNames(tour.ctrlBtns || defaultTranslation)
-      return x;
+      step.backdropOptions = {...tourOptions.backdropOptions, ...step.backdropOptions};
+      let {modalStyles, ...restProps} = step.tourModalOptions || {};
+      modalStyles = {...tourOptions.tourModalOptions.modalStyles, ...modalStyles};
+      step.tourModalOptions = {...tourOptions.tourModalOptions, ...restProps, modalStyles};
+      step.ctrlBtns = this.defineDefaultNames(tour.ctrlBtns || defaultTranslation)
+      return step;
     });
     if (isDevMode()) {
       console.log('Development mode: ', isDevMode())
@@ -137,7 +112,7 @@ export class TourService {
     return 'Error'
   }
 
-  private defineDefaultNames(btns: CtrlBtns): CtrlBtns {
+  private defineDefaultNames(btns: CtrlBtns): {[propName: string]: string;} {
     const btnCtrls = {};
     for (let prop in btns) {
       if (btns.hasOwnProperty(prop)) {
@@ -174,12 +149,18 @@ export class TourService {
     if (newStep.route && this.routeChanged) {
       this.router.navigate([newStep.route]);
     }
-    this.stepsStream$.next({stepName: newStep.stepName});
+    const delay = newStep.tourModalOptions.delay;
+    console.log('Init with delay: ', delay, newStep, this)
+    this.stepsStream$.next({stepName: newStep.stepName, delay});
   }
-
-
+  public getLang() {
+    return this.lang;
+  }
   public getHistory() {
     return this.history;
+  }
+  public getStepsLength() {
+    return this.steps.length;
   }
   public setPresets(presets: {customTemplate: boolean}): void {
     this.presets = {...presets};
@@ -198,8 +179,11 @@ export class TourService {
     if (this.history.length) return this.steps[this.history.slice(-1)[0]];
     return null;
   }
-  public getStepsStream(): Observable<Steps> {
+  public getStepsStream(): Observable<StepSubject> {
     return this.stepsStream$;
+  }
+  public getStepTargetStream(): BehaviorSubject<StepSubject> {
+    return this.stepTargetStream$;
   }
   public isRouteChanged() {
     return this.routeChanged;
@@ -257,6 +241,7 @@ export class TourService {
     ));
   }
   public getSizeAndPosition(el: Element) {
+    console.log('Rect', el, document, document.body);
     const targetRect = el.getBoundingClientRect();
     const bodyRect = document.body.getBoundingClientRect();
     const top = Math.round(targetRect.top - bodyRect.top);

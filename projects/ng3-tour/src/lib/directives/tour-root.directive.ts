@@ -13,7 +13,6 @@ import {isPlatformBrowser} from '@angular/common';
 import {Subject} from 'rxjs';
 import {map, takeUntil} from 'rxjs/operators';
 
-import {StepTargetService} from '../services/step-target.service';
 import {TourStepComponent} from '../components/tour-step.component';
 import {TourService} from '../services/tour.service';
 
@@ -31,7 +30,6 @@ export class TourRootDirective implements OnInit, OnDestroy {
     constructor(
         private elem: ElementRef,
         private readonly tourService: TourService,
-        private readonly targetService: StepTargetService,
         private viewContainer: ViewContainerRef,
         private componentFactory: ComponentFactoryResolver,
         // @dynamic
@@ -54,18 +52,18 @@ export class TourRootDirective implements OnInit, OnDestroy {
         if (isTourTemplate) {
             this.tourService.setPresets({customTemplate: true});
         } else {
-            this.targetService.getTargetSubject().pipe(
-            takeUntil(this.onDestroy),
-            map((step: any) => {
-                if (step && !this.isCreated) {
-                    this.isCreated = true;
-                    componentRef = this.viewContainer.createComponent(this.modalFactory);
-                } else if (!step && this.isCreated) {
-                    this.isCreated = false;
-                    this.viewContainer.remove(this.viewContainer.indexOf(componentRef));
-                }
-                return step;
-            })).subscribe();
+            // this.targetService.getTargetSubject().pipe(
+            // takeUntil(this.onDestroy),
+            // map((step: any) => {
+            //     if (step && !this.isCreated) {
+            //         this.isCreated = true;
+            //         componentRef = this.viewContainer.createComponent(this.modalFactory);
+            //     } else if (!step && this.isCreated) {
+            //         this.isCreated = false;
+            //         this.viewContainer.remove(this.viewContainer.indexOf(componentRef));
+            //     }
+            //     return step;
+            // })).subscribe();
         }
     }
     ngOnDestroy() {
