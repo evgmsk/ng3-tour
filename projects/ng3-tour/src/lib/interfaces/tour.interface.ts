@@ -48,7 +48,6 @@ export interface Tour {
     tourModalOptions?: TourModalProps;
     tourEvents?: TourEvents;
     ctrlBtns?: CtrlBtns;
-    withoutLogs?: boolean; 
   }
   export interface StepOptions {
     backdropOptions?: BackdropProps;
@@ -106,7 +105,6 @@ export interface Tour {
     tourEvents: TourDefaultEvents,
     backdropOptions: DefaultBackdropProps,
     tourModalOptions: DefaultModalProps,
-    withoutLogs: false
   }
 
 export function setTourProps(props: TourOptions, defaultProps: TourOptions = DefaultTourOptions): TourOptions {
@@ -119,7 +117,6 @@ export function setTourProps(props: TourOptions, defaultProps: TourOptions = Def
   tourEvents = {...defaultProps.tourEvents, ...props.tourEvents};
   backdropOptions = {...defaultProps.backdropOptions, ...props.backdropOptions};
   tourModalOptions = {...defaultProps.tourModalOptions, ...props.tourModalOptions};
-  withoutLogs = props.withoutLogs !== undefined ? props.withoutLogs : defaultProps.withoutLogs;
-  return {ctrlBtns, tourEvents, tourModalOptions, backdropOptions, withoutLogs};
+  return {ctrlBtns, tourEvents, tourModalOptions, backdropOptions};
 }
   

@@ -7,18 +7,20 @@ import {
   Inject,
   PLATFORM_ID,
   OnDestroy,
-  ViewChild,
   ViewEncapsulation,
   ElementRef,
+  isDevMode,
 } from '@angular/core';
 import {isPlatformBrowser} from '@angular/common';
-import {Observable} from 'rxjs';
-import {map, delay} from 'rxjs/operators';
+import {Observable, Subject} from 'rxjs';
+import {map, takeUntil, timeout} from 'rxjs/operators';
 
-import {TourService} from '../services/tour.service';
-import {TourStep, StepEvents, StepSubject} from '../interfaces/tour.interface';
-import {BackdropProps} from '../interfaces/backdrop.interface';
-import {TourModalProps} from '../interfaces/tour-modal.interface';
+import {
+  TourService,
+  TourStep,
+  StepEvents,
+  StepSubject
+} from '../../public_api';
 
 // @dynamic
 @Component({
@@ -30,17 +32,15 @@ import {TourModalProps} from '../interfaces/tour-modal.interface';
 })
 
 export class TourStepComponent implements OnInit, OnDestroy, StepEvents {
+  className: string;
   currentTarget: Element = null;
   currentStep: TourStep = null;
-  backdropProps: BackdropProps = {};
-  modalProps: TourModalProps = {};
   steps$: Observable<StepSubject> = null;
   isBrowser: boolean;
-  // modalStyles: ModalStyles = {position: 'absolute'};
-  @ViewChild('modalRef') modalRef: ElementRef;
   modalElement: Element = null;
-  @ViewChild('content') content: ElementRef;
   timeoutForCulc = 100;
+  onDestroy = new Subject<null>();
+  timeouts: ReturnType<typeof setTimeout>[] = [];
   
   @Output() next: EventEmitter<any> = new EventEmitter();
   @Output() prev: EventEmitter<any> = new EventEmitter();
@@ -62,7 +62,7 @@ export class TourStepComponent implements OnInit, OnDestroy, StepEvents {
     }       
   }
   @HostListener('window:resize', ['$event']) onResize(event: Event) {
-    if (this.modalProps && this.currentStep) {
+    if (this.currentStep) {
       this.culcTargetSize(this.currentTarget);
       this.getModal();
     }
@@ -73,49 +73,62 @@ export class TourStepComponent implements OnInit, OnDestroy, StepEvents {
     }
     this.steps$ = this.tourService.getStepTargetStream().pipe(
       map((step: StepSubject) => {
-        //  console.error('STEP: ', step, step?.stepTarget);
-        if (step && step.stepTarget && this.tourService.getTourStatus()) {
+        if (step?.stepTarget && this.tourService.getTourStatus()) {
           this.currentTarget = step.stepTarget;
           this.currentStep = this.tourService.getStepByName(step.stepName);
-          this.resetClasses();
-          this.backdropProps.targetWindowColor = 'transparent';
-          console.error('currentStep in component', this.currentStep, step.stepTarget);
+          if (isDevMode()) {
+            console.log('currentStep in component', this.currentStep, step.stepTarget);
+          }
           this.culcTargetSize(step.stepTarget);
-          setTimeout(() => this.getModal(), 0);
-          // this.getModal();
+          this.resetClasses();
+          this.currentStep.backdropOptions.targetWindowColor = 'transparent';
+          this.timeouts[this.timeouts.length] = setTimeout(() => this.getModal(), this.timeoutForCulc);
         } else {
           this.currentStep = null;
         }
         return step;
       })
     )
+    this.tourService.getStepsStream().pipe(
+      takeUntil(this.onDestroy),
+      map((step: StepSubject) => {
+        if (step) {
+          this.currentStep = null
+          this.resetClasses();
+        }
+        return step
+      })
+    ).subscribe();
   }
   ngOnDestroy() {
-    // this.timeouts.forEach(i => clearTimeout(i));
+    this.onDestroy.next(null);
+    this.timeouts.forEach(i => clearTimeout(i));
   }
   
   private resetClasses(): void {
     const step = this.currentStep;
-    const source = step?.tourModalOptions || this.tourService.getStepByIndex().tourModalOptions;
-    const {animatedStep, arrowToTarget,  placement, className} = source;
-    const arrowClass = arrowToTarget ? 'with-arrow' : '';
-    const animationClass = animatedStep
-      ? (step ? 'animation-on' : 'fade-on')
-      : (step ? '' : 'fade-on');
-    this.currentStep.tourModalOptions.className = `${arrowClass} ${className} pos-${placement} ${animationClass}`.trim();
+    const props = step?.tourModalOptions || this.tourService.getLastStep().tourModalOptions;
+    const {animatedStep, arrowToTarget,  placement, className} = props;
+    const arrow = arrowToTarget ? 'with-arrow' : '';
     if (step) {
-      this.modalProps.className +=  ` ${step.stepName}`
+      const animation = animatedStep ? 'animation-on' : '';
+      this.className = `${arrow} pos-${placement} ${animation} ${step.stepName} ${className}`.trim();
+    } else {
+      const animation = 'fade-on';
+      this.className = `${arrow} pos-${placement} ${animation} ${className}`.trim();
     }
+    
   }
+
   private culcTargetSize(target: Element): void {
     const size = this.tourService.getSizeAndPosition(target);
     const resize = this.currentStep.backdropOptions.targetWindowResize;
-    this.backdropProps.targetWindowSize = resize ? this.tourService.resizeTarget(size, resize) : size;
+    this.currentStep.backdropOptions.targetWindowSize = resize ? this.tourService.resizeTarget(size, resize) : size;
   }
 
   private defineStepPlacementToWindow(placement: string) {
     const {modHeight, modWidth} = this.currentStep.tourModalOptions.modalSize;
-    const HI = this.modalProps.horisontalIndent;
+    const HI = this.currentStep.modalProps.horisontalIndent;
     if (/^right-center$/i.test(placement)) {
       this.currentStep.tourModalOptions.modalStyles.right = `${HI}px`;
       this.currentStep.tourModalOptions.modalStyles.top = `${Math.round(window.innerHeight / 2 - modHeight / 2)}px`;    
@@ -127,55 +140,45 @@ export class TourStepComponent implements OnInit, OnDestroy, StepEvents {
       this.currentStep.tourModalOptions.modalStyles.top = `${Math.round(window.innerHeight / 2 - modHeight / 2)}px`;
     }
   }
-  public getModal (tries = 3) {
-    console.log(this.currentStep, this.currentTarget, this.modalRef, this.elem.nativeElement.querySelector('.tour-step-modal'))
-    this.modalElement = this.modalRef?.nativeElement || this.elem.nativeElement.querySelector('.tour-step-modal');;
-    console.log('Element0: ', this.modalElement);
-    if (!this.modalElement && tries > 0) {
-      tries -= 1;
-      return this.getModal(tries)
+  public getModal (attempts = 3) {
+    this.modalElement = this.elem.nativeElement.querySelector('.tour-step-modal');;
+    if (!this.modalElement && attempts > 0) {
+      attempts -= 1;
+      this.timeouts[this.timeouts.length] = setTimeout(() => this.getModal(attempts), this.timeoutForCulc);
+      return this.timeouts;
     }
     return this.defineModalPlacementToTarget();
   }
   private defineModalPlacementToTarget(modal: Element = this.modalElement) {
-    console.error('ModalStylesBefore: ', this.currentStep, this.currentStep.tourModalOptions.modalStyles);
     const modalRect = modal.getBoundingClientRect();
     let modWidth: number, modHeight: number;
-    console.error(modalRect)
     if (modalRect) {
       modHeight = Math.round(modalRect.height ? modalRect.height : modalRect.bottom - modalRect.top);
       modWidth = Math.round(modalRect.width ? modalRect.width : modalRect.right - modalRect.left);
       this.currentStep.tourModalOptions.modalSize = {modWidth, modHeight};
     }
     const {placement, scrollTo} = this.currentStep.tourModalOptions;
-    const {top, bottom, width, left, right} = this.backdropProps.targetWindowSize;
+    const {top, bottom, width, left, right} = this.currentStep.backdropOptions.targetWindowSize;
     const VI = this.currentStep.tourModalOptions.verticalIndent;
     const HI = this.currentStep.tourModalOptions.horisontalIndent;
-    // let position: TourModalPosition;
     if (/^down$/i.test(placement)) {
       this.currentStep.tourModalOptions.modalStyles.top = `${bottom + VI}px`;
       this.currentStep.tourModalOptions.modalStyles.left = `${Math.round(left - modWidth / 2)}px`;
-      // position = {top: bottom + VI, left: Math.round(left - modWidth / 2)}
     } else if (/^top$/i.test(placement)) {
       this.currentStep.tourModalOptions.modalStyles.top = `${top  - modHeight - VI}px`;
       this.currentStep.tourModalOptions.modalStyles.left = `${Math.round(left - modWidth / 2)}px`;
-      // position = {top: top  - modHeight - VI, left: Math.round(left - modWidth / 2)};
     } else if (/^left$/i.test(placement)) {
       this.currentStep.tourModalOptions.modalStyles.top = `${top}px`;
       this.currentStep.tourModalOptions.modalStyles.left = `${left - modWidth - VI}px`;
-      // position = {left: left - modWidth - VI, top};
     } else if (/^right$/i.test(placement)) {
       this.currentStep.tourModalOptions.modalStyles.top = `${top}px`;
       this.currentStep.tourModalOptions.modalStyles.left = `${right + width + VI}px`;
-      // position = {left: right + width + VI, top};
     } else if (/^left-top$/i.test(placement)) {
       this.currentStep.tourModalOptions.modalStyles.top = `${top - modHeight + HI}px`;
       this.currentStep.tourModalOptions.modalStyles.left = `${left - width - VI}px`;
-      // position = {left: left - width - VI, top: top - modHeight + HI};
     } else if (/^right-top$/i.test(placement)) {
       this.currentStep.tourModalOptions.modalStyles.top = `${top - modHeight + HI}px`;
       this.currentStep.tourModalOptions.modalStyles.left = `${right + width + VI}px`;
-      // position = {left: right + width + VI, top: top - modHeight + HI};
     } else {
       this.defineStepPlacementToWindow(placement);
     }
@@ -185,7 +188,6 @@ export class TourStepComponent implements OnInit, OnDestroy, StepEvents {
     if (scrollTo) {
       this.scrollTo();
     }
-    console.error('ModalStyles: ', this.currentStep.tourModalOptions.modalStyles)
   }
   
   private setFocus(modal: Element) {
@@ -199,7 +201,7 @@ export class TourStepComponent implements OnInit, OnDestroy, StepEvents {
   }
   private scrollTo() {
     const {placement, modalStyles: {position}} = this.currentStep.tourModalOptions;
-    const {left, top, bottom} = this.backdropProps.targetWindowSize;
+    const {left, top, bottom} = this.currentStep.backdropOptions.targetWindowSize;
     const HI = this.currentStep.tourModalOptions.horisontalIndent;
     const Top = placement !== 'top' ? top - 2 * HI : top - bottom - HI;
     const behavior = this.currentStep.tourModalOptions.smoothScroll ? 'smooth' : 'auto';

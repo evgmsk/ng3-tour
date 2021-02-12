@@ -1,6 +1,6 @@
 {
   "name": "ng3-tour",
-  "version": "0.1.10",
+  "version": "0.2.00",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",

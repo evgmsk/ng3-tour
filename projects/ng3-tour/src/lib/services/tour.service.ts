@@ -26,7 +26,6 @@ export class TourService {
   private history = [];
   private routeChanged = false;
   private presets: {[propName: string]: any};
- // private tourStart = TourDefaultEvents.tourStart;
   private tourBreak = defaultTourEvent;
   private tourEnd = defaultTourEvent;
   private next = defaultTourEvent;
@@ -79,7 +78,7 @@ export class TourService {
       let {modalStyles, ...restProps} = step.tourModalOptions || {};
       modalStyles = {...tourOptions.tourModalOptions.modalStyles, ...modalStyles};
       step.tourModalOptions = {...tourOptions.tourModalOptions, ...restProps, modalStyles};
-      step.ctrlBtns = this.defineDefaultNames(tour.ctrlBtns || defaultTranslation)
+      step.ctrlBtns = this.defineDefaultNames(tour.ctrlBtns || defaultTranslation);
       return step;
     });
     if (isDevMode()) {
@@ -150,7 +149,6 @@ export class TourService {
       this.router.navigate([newStep.route]);
     }
     const delay = newStep.tourModalOptions.delay;
-    console.log('Init with delay: ', delay, newStep, this)
     this.stepsStream$.next({stepName: newStep.stepName, delay});
   }
   public getLang() {
@@ -241,7 +239,6 @@ export class TourService {
     ));
   }
   public getSizeAndPosition(el: Element) {
-    console.log('Rect', el, document, document.body);
     const targetRect = el.getBoundingClientRect();
     const bodyRect = document.body.getBoundingClientRect();
     const top = Math.round(targetRect.top - bodyRect.top);

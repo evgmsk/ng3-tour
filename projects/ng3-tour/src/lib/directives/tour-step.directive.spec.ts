@@ -26,18 +26,19 @@ describe('TourStepDirective', () => {
   let fixture: ComponentFixture<TestApp>;
   let target: Element;
   let step$: any;
-  // beforeEach(() => {
-  //   fixture = TestBed.createComponent(TestApp);
-  //   component = fixture.componentInstance;
-  //   target = fixture.nativeElement.querySelector('.target');
+  beforeEach(() => {
+    fixture = TestBed.createComponent(TestApp);
+    component = fixture.componentInstance;
+    target = fixture.nativeElement.querySelector('.target');
+  });
+  // it ('directive add target to step', async () => {
   //   service.startTour({steps: [{stepName: 'first'}]});
   //   fixture.detectChanges();
-  // });
-  // it ('directive add target to step', async () => {
   //   step$ = service.getStepsStream().subscribe((step: StepSubject) => {
   //       console.log('sTep', step)
   //       expect(step.stepTarget).toBeTruthy();
   //   });
+  //   // service.stopTour();
   // });
 })
 

@@ -37,7 +37,7 @@ const steps2: TourStep[] = [
     title: 'Courses Page',
     description: 'Lazily loaded',
     adds: 'Some adds',
-  //   options: {customTemplate: true, smoothScroll: true, themeColor: '#254689', opacity: .9}
+    tourModalOptions: {customTemplate: true}
   },
   {
     stepName: 'third',
@@ -58,17 +58,17 @@ describe('TourStepComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [AngularTourModule],
-      declarations: [TourStepComponent, TourStepDirective],
+      declarations: [AppComponent,TourStepComponent, TourStepDirective],
       providers: [TourService, {provide: Router, useValue: routerSpy}],
     }).compileComponents();
     service = TestBed.inject(TourService);
   }));
-  let component: TourStepComponent;
-  let fixture: ComponentFixture<TourStepComponent>;
+  let component: AppComponent;
+  let fixture: ComponentFixture<AppComponent>;
   let tourWrapper: Element;
   let target: Element;
   beforeEach(() => {
-    fixture = TestBed.createComponent(TourStepComponent);
+    fixture = TestBed.createComponent(AppComponent);
     component = fixture.componentInstance;
     tourWrapper = fixture.nativeElement.querySelector('.tour-step-wrapper');
     service.startTour({steps: steps2});
@@ -81,19 +81,18 @@ describe('TourStepComponent', () => {
     service.getStepTargetStream().next({stepName: 'first', delay: 1000, stepTarget: DummyApp});
     fixture.detectChanges();
     const modal = fixture.debugElement.query(By.css('.tour-step-modal'));
-    console.log("Modal: ", modal)
+    console.log("Modal: ", modal);
     expect(component).toBeTruthy();
-    // console.log('Modal', modal, component.currentStep.tourModalOptions);
-    // expect(modal.styles['position']).toBe("absolute");
-    // expect(modal.styles['color']).toBe(convertToRGB(component.currentStep.tourModalOptions.modalStyles.color)); 
-    // console.log('Color', convertToRGB(component.currentStep.tourModalOptions.color)) 
-    // const modal = fixture.debugElement.query(By.css('.tour-step-modal'));
-    // console.log('Modal', modal, component.currentStep.tourModalOptions);
-    // expect(modal.styles['position']).toBe("absolute");
-    // expect(modal.styles['color']).toBe("000000");  
+    expect(modal.styles['position']).toBe("absolute");
+    expect(modal.styles['color']).toBe(convertToRGB(service.getLastStep().tourModalOptions.modalStyles.color));  
   });
   it ('simple test', () => {
-    expect(true).toBe(true) 
+    DummyApp.setAttribute('ngStepTour', 'second');
+    DummyApp.classList.add('target2');
+    service.getStepTargetStream().next({stepName: 'second', delay: 1000, stepTarget: DummyApp});
+    fixture.detectChanges();
+    const content = fixture.debugElement.query(By.css('.content'));
+    expect(content).toBeTruthy(); 
   })
 });
 
@@ -116,7 +115,7 @@ function convertToRGB(color: string): string {
             <div ngTourStep="fourth" [style]="styles" class="target4" ></div>
               <ng-tour-step-template #gg="tour" (next)="onNext($event)" (done)="onDone($event)">
                   <div  class="tour-step-modal__content">
-                    Content: {{gg}}
+                    Content: <pre>{{gg.className}}</pre>
                   </div>
               </ng-tour-step-template>
             </div>`,

@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+import { TestBed, async} from '@angular/core/testing';
 import {Router} from '@angular/router';
 
 import {
@@ -61,15 +61,15 @@ const steps2: TourStep[] = [
 //     tourEnd: ({step}) => console.log(step),
 //   };
 
-describe('TourService', () => {
+describe('TourService', async () => {
   let service: TourService;
   let routerSpy = {navigate: jasmine.createSpy('navigate')};
   beforeEach(() => {
     TestBed.configureTestingModule({
-      // imports: [RouterModule, AngularTourModule],
       providers: [TourService, {provide: Router, useValue: routerSpy}],
     });
     service = TestBed.inject(TourService);
+    service.startTour({steps: steps2});
   });
 
   it('should be created', () => {
@@ -91,6 +91,7 @@ describe('TourService', () => {
         of: defaultTranslation['of'][service.getLang()],
       },
     }
+    service.stopTour();
     service.startTour({steps: steps1})
     expect(service.getTourStatus()).toBe(true);
     expect(service.getStepByIndex(0)).toEqual(expectedStep);
@@ -112,6 +113,7 @@ describe('TourService', () => {
         of: defaultTranslation['of'][service.getLang()],
       },
     }
+    service.stopTour();
     service.startTour({steps: steps2})
     const step = service.getStepByIndex(0);
     expect(service.getStepByIndex(1)).toEqual(expectedStep);
@@ -140,5 +142,13 @@ describe('TourService', () => {
       default:
         expect(step.title).toBe('My first feature');
     }
-  }); 
+  });
+  it('should be right history', async () => {
+    console.log('service history ', service.getHistory(), service.getLastStep(), service.getTourStatus())
+    service.nextStep();
+    service.nextStep();
+    service.prevStep();
+    
+    expect(service.getHistory()).toEqual([0, 1, 2, 1])
+  })
 });

@@ -1,4 +1,4 @@
-import { Directive, Input, Inject, PLATFORM_ID, AfterViewInit, OnDestroy, ElementRef} from '@angular/core';
+import { Directive, Input, Inject, PLATFORM_ID, AfterViewInit, OnDestroy, ElementRef, isDevMode} from '@angular/core';
 import {isPlatformBrowser} from '@angular/common';
 import {Subscription, Subject, TimeoutError} from 'rxjs';
 import {map, takeUntil, delay} from 'rxjs/operators';
@@ -32,11 +32,13 @@ export class TourStepDirective implements AfterViewInit, OnDestroy {
     this.tour.getStepsStream().pipe(
       takeUntil(this.onDestroy),
       map((step: StepSubject) => {
-        console.log('Directive: ', this.name, 'Step: ', step)
         if (step && step.stepName && this.name === step.stepName) {
           this.delay = step.delay;
           step.stepTarget = this.elemRef.nativeElement;
           this.timeout = setTimeout(() => this.tour.getStepTargetStream().next(step), this.delay);
+          if (isDevMode()) {
+            console.log('Step in directive: ', step);
+          }
         }
         return step;
       }
