@@ -2,18 +2,19 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import {map} from 'rxjs/operators';
 import {Router} from '@angular/router';
 import {By} from '@angular/platform-browser';
-import {Component, ElementRef} from '@angular/core';
+import {Component} from '@angular/core';
 
 import {
-  TourService,
-  TourStepComponent,
-  AngularTourModule,
-  TourStepDirective,
+  Ng3TourService,
+  Ng3TourComponent,
+  Ng3TourModule,
+  Ng3TourModalDirective,
+  Ng3TourBackdropComponent
 } from '../../public_api';
-import {TourStep} from '../interfaces/tour.interface';
+import {TourStep} from '../interfaces/ng3-tour.interface';
 
 const DummyApp = document.createElement('div');
-DummyApp.setAttribute("ngTourStep", "first");
+DummyApp.setAttribute("ng3TourStep", "first");
 const styles = {
   top: '100px',
   left: '200px',
@@ -37,7 +38,7 @@ const steps2: TourStep[] = [
     title: 'Courses Page',
     description: 'Lazily loaded',
     adds: 'Some adds',
-    tourModalOptions: {customTemplate: true}
+    tourModalOptions: {modalStyles: {color: '#333333', position: 'fixed'}}
   },
   {
     stepName: 'third',
@@ -53,22 +54,22 @@ const steps2: TourStep[] = [
   // {stepName: 'fifth', route: 'home', options: { placement: 'center', smoothScroll: true, stepTargetResize: [5], fixed: true }},
 ];
 describe('TourStepComponent', () => {
-  let service: TourService;
+  let service: Ng3TourService;
   let routerSpy = {navigate: jasmine.createSpy('navigate')};
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [AngularTourModule],
-      declarations: [AppComponent,TourStepComponent, TourStepDirective],
-      providers: [TourService, {provide: Router, useValue: routerSpy}],
+      imports: [Ng3TourModule],
+      declarations: [Ng3TourComponent, Ng3TourModalDirective, Ng3TourBackdropComponent],
+      providers: [Ng3TourService, {provide: Router, useValue: routerSpy}],
     }).compileComponents();
-    service = TestBed.inject(TourService);
+    service = TestBed.inject(Ng3TourService);
   }));
-  let component: AppComponent;
-  let fixture: ComponentFixture<AppComponent>;
+  let component: Ng3TourComponent;
+  let fixture: ComponentFixture<Ng3TourComponent>;
   let tourWrapper: Element;
   let target: Element;
   beforeEach(() => {
-    fixture = TestBed.createComponent(AppComponent);
+    fixture = TestBed.createComponent(Ng3TourComponent);
     component = fixture.componentInstance;
     tourWrapper = fixture.nativeElement.querySelector('.tour-step-wrapper');
     service.startTour({steps: steps2});
@@ -81,19 +82,67 @@ describe('TourStepComponent', () => {
     service.getStepTargetStream().next({stepName: 'first', delay: 1000, stepTarget: DummyApp});
     fixture.detectChanges();
     const modal = fixture.debugElement.query(By.css('.tour-step-modal'));
-    console.log("Modal: ", modal);
+    console.log("Modal: ", modal, modal.styles);
     expect(component).toBeTruthy();
     expect(modal.styles['position']).toBe("absolute");
     expect(modal.styles['color']).toBe(convertToRGB(service.getLastStep().tourModalOptions.modalStyles.color));  
   });
-  it ('simple test', () => {
+
+  it ('should appropriately handle the click event on the done button of the Tour Modal', () => {
+    service.stopTour();
+    service.startTour({steps: steps2})
+    DummyApp.setAttribute('ngStepTour', 'fourth');
+    DummyApp.classList.add('target4');
+    service.initStep(3);
+    service.getStepTargetStream().next({stepName: 'fourth', delay: 1000, stepTarget: DummyApp});
+    fixture.detectChanges();
+    const next = fixture.debugElement.query(By.css('.tour-btn-next'));
+    const prev = fixture.debugElement.query(By.css('.tour-btn-prev'));
+    const close = fixture.debugElement.query(By.css('.tour-btn-close'));
+    const done = fixture.debugElement.query(By.css('.tour-btn-done'));
+    expect(next).toBeFalsy();
+    expect(prev).toBeTruthy();
+    expect(done).toBeTruthy();
+    expect(close).toBeTruthy();
+    expect(service.getLastStep().index).toBe(3);
+    done.triggerEventHandler('click', {});
+    fixture.detectChanges();
+    expect(service.getHistory()).toEqual([]);
+  })
+  it ('should appropriately handle the click event on the next and buttons of the Tour Modal', () => {
+    service.stopTour();
+    service.startTour({steps: steps2});
+    service.initStep(1);
     DummyApp.setAttribute('ngStepTour', 'second');
     DummyApp.classList.add('target2');
     service.getStepTargetStream().next({stepName: 'second', delay: 1000, stepTarget: DummyApp});
     fixture.detectChanges();
-    const content = fixture.debugElement.query(By.css('.content'));
-    expect(content).toBeTruthy(); 
+    const next = fixture.debugElement.query(By.css('.tour-btn-next'));
+    const prev = fixture.debugElement.query(By.css('.tour-btn-prev'));
+    const close = fixture.debugElement.query(By.css('.tour-btn-close'));
+    const done = fixture.debugElement.query(By.css('.tour-btn-done'));
+    expect(next).toBeTruthy();
+    expect(prev).toBeTruthy();
+    expect(close).toBeTruthy();
+    expect(done).toBeFalsy();
+    expect(service.getLastStep().index).toBe(1);
+    next.triggerEventHandler('click', {});
+    fixture.detectChanges();
+    expect(service.getLastStep().index).toBe(2);
+    // console.error(next, prev, close, done);
+    fixture.detectChanges();
   })
+  // it ('simple test2', () => {
+  //   DummyApp.setAttribute('ngStepTour', 'second');
+  //   DummyApp.classList.add('target2');
+  //   service.getStepTargetStream().next({stepName: 'second', delay: 1000, stepTarget: DummyApp});
+  //   fixture.detectChanges();
+  //   const app = fixture.debugElement.query(By.css('.tour-step-modal'));
+  //   expect(app).toBeTruthy();
+  //   const tag2 = fixture.debugElement.query(By.css('.target2'));
+  //   fixture.detectChanges();
+  //   console.error('app', app.nativeNode, tag2.nativeNode, tag2.nativeElement.getBoundingClientRect())
+  // })
 });
 
 function convertToRGB(color: string): string {
@@ -108,22 +157,31 @@ function convertToRGB(color: string): string {
 }
 @Component({
   selector: 'app-component',
-  template: `<div>
-            <div ngTourStep="first" [style]="styles" class="target1" ></div>
-            <div ngTourStep="second" [style]="styles" class="target2" ></div>
-            <div ngTourStep="third" [style]="styles" class="target3" ></div>
-            <div ngTourStep="fourth" [style]="styles" class="target4" ></div>
-              <ng-tour-step-template #gg="tour" (next)="onNext($event)" (done)="onDone($event)">
+  template: `<div class="app">
+            <div ng3TourStep="first" [style]="Style.dd" class="target1" ></div>
+            <div ng3TourStep="second" [style]="Style.dd" class="target2" ></div>
+            <div ng3TourStep="third" [style]="styles" class="target3" ></div>
+            <div ng3TourStep="fourth" [style]="styles" class="target4" ></div>
+              <ng3-tour-template #gg="tour" (next)="onNext($event)" (done)="onDone($event)">
                   <div  class="tour-step-modal__content">
                     Content: <pre>{{gg.className}}</pre>
                   </div>
-              </ng-tour-step-template>
+              </ng3-tour-template>
             </div>`,
-  styleUrls: ['./tour-step.component.scss'],
+  styleUrls: ['./ng3-tour.component.scss'],
 })
 class AppComponent {
+  Style = {};
+  
   constructor() {
-    
+    this.Style['dd'] = {
+      color: "#121212",
+      left: "290px",
+      height: "100px",
+      width: "200px",
+      position: "absolute",
+      top: "388px"
+    };
   }
 }
 

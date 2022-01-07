@@ -25,6 +25,13 @@ export interface TourModalProps {
     total?: number,
 }
 
+export interface ModalPosition {
+    left?: string;
+    right?: string;
+    top?: string;
+    bottom?: string;
+}
+
 export interface ModalStyles {
     "min-width"?: string;
     "min-height"?: string;
@@ -37,12 +44,13 @@ export interface ModalStyles {
     top?: string;
     bottom?: string;
 }
+
 export const DefaultModalStyles = {
     position: 'absolute',
-    "min-width": '250',
-    "min-height": '150',
-    "max-width": '400',
-    "max-height": '600',
+    minWidth: '250px',
+    minHeight: '150px',
+    maxWidth: '400px',
+    maxHeight: '600px',
     color: '#121212',
 }
 
@@ -59,7 +67,13 @@ export const DefaultModalProps = {
     delay: 1000,
     animatedStep: true,
     smoothScroll: false,
-    scrollTo: false,
+    scrollTo: true,
     closeOnClickOutside: false,
     autofocus: true,
+}
+
+export interface ModalEvent {
+    tourEvent: string;
+    index: number;
+    history: number[];
 }

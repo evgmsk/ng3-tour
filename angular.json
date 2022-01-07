@@ -7,7 +7,7 @@
       "projectType": "library",
       "root": "projects/ng3-tour",
       "sourceRoot": "projects/ng3-tour/src",
-      "prefix": "lib",
+      "prefix": "ng3",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-ng-packagr:build",

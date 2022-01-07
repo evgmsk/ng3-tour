@@ -10,22 +10,22 @@ import {
 } from '@angular/core';
 import {isPlatformBrowser} from '@angular/common';
 
-import {TourService} from '../services/tour.service';
+import {Ng3TourService, ModalEvent} from '../../public_api';
 // @dynamic
 @Directive({
-    selector: '[stepEvent]',
+    selector: '[modalEvent]',
 })
-export class StepEventsDirective implements OnInit {
-    @Input('stepEvent') eventType: string; // possible values 'next', 'prev', 'close'
+export class Ng3TourEventDirective implements OnInit {
+    @Input('modalEvent') eventType: string; // possible values 'next', 'prev', 'close'
     isBrowser: boolean;
 
-    @Output() next: EventEmitter<{[propName: string]: any}> = new EventEmitter();
-    @Output() prev: EventEmitter<any> = new EventEmitter();
-    @Output() done: EventEmitter<any> = new EventEmitter();
-    @Output() break: EventEmitter<any> = new EventEmitter();
+    @Output() next: EventEmitter<ModalEvent> = new EventEmitter();
+    @Output() prev: EventEmitter<ModalEvent> = new EventEmitter();
+    @Output() done: EventEmitter<ModalEvent> = new EventEmitter();
+    @Output() break: EventEmitter<ModalEvent> = new EventEmitter();
     handler: () => void;
     constructor(
-        private readonly tourService: TourService,
+        private readonly tourService: Ng3TourService,
         // @dynamic
         @Inject(PLATFORM_ID) platformId: {}) {
         this.isBrowser = isPlatformBrowser(platformId);
@@ -60,7 +60,7 @@ export class StepEventsDirective implements OnInit {
     handlePrev() {
         return this.handler = () => {
             this.prev.emit({
-                tourEvent: 'next',
+                tourEvent: 'prev',
                 index: this.tourService.getLastStep().index - 1,
                 history: this.tourService.getHistory()
             });

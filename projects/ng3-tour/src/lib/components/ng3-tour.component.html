@@ -1,15 +1,14 @@
-<div class="tour-step-wrapper" *ngIf="steps$ | async" >
-  <ng-tour-step-back
+<div class="tour-step-wrapper" *ngIf="steps$ | async" [ngClass]="className">
+  <ng3-tour-backdrop
     *ngIf="currentStep && currentStep.backdropOptions.isBackdrop"
     [props]="currentStep.backdropOptions"
   >
-  </ng-tour-step-back>
+  </ng3-tour-backdrop>
   <div
     *ngIf="currentStep as step"
     [ngClass]="step.tourModalOptions.className"
-    #modalRef
     class="tour-step-modal"
-    [style]="step.tourModalOptions.modalStyles"  
+    [ngStyle]="step.tourModalOptions.modalStyles"
   > 
     <div *ngIf="!step.tourModalOptions.customTemplate" class="tour-step-modal__content">
       <div class="tour-step-modal__header">
@@ -38,7 +37,7 @@
           {{step.ctrlBtns.prev}}
         </button>
         <button
-          *ngIf="step.index + 1 !== step.tourModalOptions.total"
+          *ngIf="step.index + 1 !== step.total"
           type="button"
           class="tour-btn tour-btn-next"
           (click)="onNext($event)"          

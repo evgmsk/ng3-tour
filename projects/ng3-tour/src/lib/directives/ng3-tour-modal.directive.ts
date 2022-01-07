@@ -1,25 +1,23 @@
 import { Directive, Input, Inject, PLATFORM_ID, AfterViewInit, OnDestroy, ElementRef, isDevMode} from '@angular/core';
 import {isPlatformBrowser} from '@angular/common';
-import {Subscription, Subject, TimeoutError} from 'rxjs';
-import {map, takeUntil, delay} from 'rxjs/operators';
+import {Subject} from 'rxjs';
+import {map, takeUntil} from 'rxjs/operators';
 
-import {TourService} from '../services/tour.service';
-import {StepSubject} from '../interfaces/tour.interface';
+import {Ng3TourService, StepSubject} from '../../public_api';
 
 // @dynamic
 @Directive({
-  selector: '[ngTourStep]'
+  selector: '[ng3TourStep]'
 })
-export class TourStepDirective implements AfterViewInit, OnDestroy {
-  @Input('ngTourStep') name: string;
+export class Ng3TourModalDirective implements AfterViewInit, OnDestroy {
+  @Input('ng3TourStep') name: string;
   private readonly onDestroy = new Subject<any>();
-  // subscription: Subscription;
   isBrowser: boolean;
   delay: number;
   timeout: ReturnType<typeof setTimeout>;
   constructor(
     private elemRef: ElementRef,
-    private readonly tour: TourService,   
+    private readonly tour: Ng3TourService,   
     // @dynamic
     @Inject(PLATFORM_ID) platformId: {}) {
       this.isBrowser = isPlatformBrowser(platformId);

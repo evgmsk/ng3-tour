@@ -1,22 +1,15 @@
-import {BackdropProps, DefaultBackdropProps} from './backdrop.interface';
+import {BackdropProps, DefaultBackdropProps} from './ng3-tour-backdrop.interface';
 // import {StepOptions, DefaultOptions, RestStepOptions} from './step.interface';
-import {DefaultModalProps, TourModalProps} from './tour-modal.interface';
+import {DefaultModalProps, TourModalProps} from './ng3-tour-modal.interface';
 
 export interface Tour {
     steps: TourStep[];
     backdropOptions?: BackdropProps;
     tourModalOptions?: TourModalProps;
-    tourEvents?: TourEvents;
+    tourEvents?: TourEventHandlers;
     ctrlBtns?: CtrlBtns;
     withoutLogs?: boolean;
   }
-
-  export type TourEvent =  (props: {
-    tourEvent: string,
-    step?: number | string,
-    history?: number[],
-    tour?: Tour,
-  }) => void;
 
   export interface CtrlBtns {
     prev?: {[propsName: string]: string} | string;
@@ -25,7 +18,7 @@ export interface Tour {
     [propsName: string]: any;
   }
  
-  export interface StepEvents {
+  export interface ModalEventHandlers {
     onNext($event: Event): void;
     onPrev($event: Event): void;
     onClose($event: Event): void;
@@ -46,9 +39,10 @@ export interface Tour {
   export interface TourOptions {
     backdropOptions?: BackdropProps;
     tourModalOptions?: TourModalProps;
-    tourEvents?: TourEvents;
+    tourEvents?: TourEventHandlers;
     ctrlBtns?: CtrlBtns;
   }
+
   export interface StepOptions {
     backdropOptions?: BackdropProps;
     tourModalOptions?: TourModalProps;
@@ -59,15 +53,22 @@ export interface Tour {
     delay?: number;
     stepTarget?: Element;
   }
-  
-  export interface TourEvents {
-    tourStart?: TourEvent;
-    tourEnd?: TourEvent;
-    tourBreak?: TourEvent;
-    next?: TourEvent;
-    prev?: TourEvent;
+
+  export type TourEventHandler =  (props: {
+    tourEvent: string,
+    step?: number | string,
+    history?: number[],
+    tour?: Tour,
+  }) => void;
+
+  export interface TourEventHandlers {
+    tourStart?: TourEventHandler;
+    tourEnd?: TourEventHandler;
+    tourBreak?: TourEventHandler;
+    next?: TourEventHandler;
+    prev?: TourEventHandler;
   }
-  export const defaultTranslation = {
+  export const ButtonsDefaultTranslation = {
     done: {
      'en-EN': 'done',
      'ru-RU': 'закр',
@@ -90,29 +91,28 @@ export interface Tour {
     }
   }
   
-  export const defaultTourEvent: TourEvent = (props) => {};
+  export const DefaultTourEventHandler: TourEventHandler = (props) => {};
   
-  export const TourDefaultEvents = {
-    tourStart: defaultTourEvent,
-    tourEnd: defaultTourEvent,
-    tourBreak: defaultTourEvent,
-    next: defaultTourEvent,
-    prev: defaultTourEvent,
+  export const DefaulttourEventHandlers = {
+    tourStart: DefaultTourEventHandler,
+    tourEnd: DefaultTourEventHandler,
+    tourBreak: DefaultTourEventHandler,
+    next: DefaultTourEventHandler,
+    prev: DefaultTourEventHandler,
   };
 
   export const DefaultTourOptions: TourOptions = {
-    ctrlBtns: defaultTranslation,
-    tourEvents: TourDefaultEvents,
+    ctrlBtns: ButtonsDefaultTranslation,
+    tourEvents: DefaulttourEventHandlers,
     backdropOptions: DefaultBackdropProps,
     tourModalOptions: DefaultModalProps,
   }
 
 export function setTourProps(props: TourOptions, defaultProps: TourOptions = DefaultTourOptions): TourOptions {
   let ctrlBtns: CtrlBtns,
-  tourEvents: TourEvents,
+  tourEvents: TourEventHandlers,
   backdropOptions: BackdropProps,
-  tourModalOptions: TourModalProps,
-  withoutLogs: boolean;
+  tourModalOptions: TourModalProps;
   ctrlBtns = {...defaultProps.ctrlBtns, ...props.ctrlBtns};
   tourEvents = {...defaultProps.tourEvents, ...props.tourEvents};
   backdropOptions = {...defaultProps.backdropOptions, ...props.backdropOptions};

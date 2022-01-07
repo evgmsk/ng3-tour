@@ -2,13 +2,12 @@
  * Public API Surface of ng-tour
  */
 
-export * from './lib/components/tour-step.component';
-export * from './lib/components/tour-step-back/tour-step-back.component';
-export * from './lib/services/tour.service';
-export * from './lib/directives/tour-root.directive';
-export * from './lib/directives/tour-step.directive';
-export * from './lib/directives/step-events.directive';
-export * from './lib/ng-tour.module';
-export * from './lib/interfaces/backdrop.interface';
-export * from './lib/interfaces/tour-modal.interface';
-export * from './lib/interfaces/tour.interface';
+export * from './lib/components/ng3-tour.component';
+export * from './lib/components/ng3-tour-backdrop/ng3-tour-backdrop.component';
+export * from './lib/services/ng3-tour.service';
+export * from './lib/directives/ng3-tour-modal.directive';
+export * from './lib/directives/ng3-tour-modal-events.directive';
+export * from './lib/ng3-tour.module';
+export * from './lib/interfaces/ng3-tour-backdrop.interface';
+export * from './lib/interfaces/ng3-tour-modal.interface';
+export * from './lib/interfaces/ng3-tour.interface';

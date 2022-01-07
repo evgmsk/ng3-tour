@@ -1,26 +1,22 @@
 import { async, ComponentFixture, TestBed} from '@angular/core/testing';
-import {map, delay} from 'rxjs/operators';
+// import {map, delay} from 'rxjs/operators';
 import {Router} from '@angular/router';
-import {By} from '@angular/platform-browser';
 import {Component, ElementRef} from '@angular/core';
 import {
-    TourService,
-    TourStepComponent,
-    AngularTourModule,
-    TourStepDirective,
-  } from '../../public_api';
-import {StepSubject} from '../interfaces/tour.interface';
+  Ng3TourService,
+  Ng3TourModule,
+} from '../../public_api';
 
 describe('TourStepDirective', () => {
-  let service: TourService;
+  let service: Ng3TourService;
   let routerSpy = {navigate: jasmine.createSpy('navigate')};
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [AngularTourModule],
+      imports: [Ng3TourModule],
       declarations: [TestApp],
-      providers: [TourService, {provide: Router, useValue: routerSpy}],
+      providers: [Ng3TourService, {provide: Router, useValue: routerSpy}],
     }).compileComponents();
-    service = TestBed.inject(TourService);
+    service = TestBed.inject(Ng3TourService);
   }));
   let component: TestApp;
   let fixture: ComponentFixture<TestApp>;
@@ -45,7 +41,7 @@ describe('TourStepDirective', () => {
 @Component({
 selector: 'test-app-component',
 template:   `<div>
-                <div ngTourStep="first" class="target" [style]="styles" ></div>
+                <div ng3TourStep="first" class="target" [style]="styles" ></div>
             </div>`,
 styles: [''],
 })

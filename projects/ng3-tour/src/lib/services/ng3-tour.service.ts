@@ -7,29 +7,27 @@ import {
   Tour,
   CtrlBtns,
   TourStep,
-  defaultTourEvent,
-  defaultTranslation,
-  TourDefaultEvents,
+  DefaultTourEventHandler,
+  ButtonsDefaultTranslation,
+  DefaulttourEventHandlers,
   setTourProps,
-  StepSubject
-} from '../interfaces/tour.interface';
-
-import { TargetWindowSize } from '../interfaces/backdrop.interface';
+  StepSubject,
+  TargetWindowSize
+} from '../../public_api';
 
  // @dynamic
 @Injectable()
-export class TourService {
+export class Ng3TourService {
   private steps: TourStep[];
   private tourStarted = false;
   private stepsStream$ = new BehaviorSubject<TourStep>(null);
   private stepTargetStream$ = new BehaviorSubject<TourStep>(null);
   private history = [];
   private routeChanged = false;
-  private presets: {[propName: string]: any};
-  private tourBreak = defaultTourEvent;
-  private tourEnd = defaultTourEvent;
-  private next = defaultTourEvent;
-  private prev = defaultTourEvent;
+  private tourBreak = DefaultTourEventHandler;
+  private tourEnd = DefaultTourEventHandler;
+  private next = DefaultTourEventHandler;
+  private prev = DefaultTourEventHandler;
   private isBrowser: boolean;
   private lang: string;
   constructor(
@@ -49,17 +47,13 @@ export class TourService {
 
   private validateOptions(tour: Tour): void | never {
     const regExpr = /^top$|^down$|^left$|^right$|^center$|^right-center$|^left-center$|^right-top$|^left-top$/i;
-    let isValid = true;
-    tour.steps.forEach((step: TourStep) => {
-      if (step.options && step.options.modalProps.placement) {
-        isValid = regExpr.test(step.options.modalProps.placement);
+    tour.steps.forEach((step: TourStep, i: number) => {
+      if (step.tourModalOptions?.placement && !regExpr.test(step.tourModalOptions?.placement)) {
+        throw Error(`Placement option of the step ${i} of the ng3-tour is invalid ${step.tourModalOptions?.placement}`);
       }
     });
-    if (tour.tourModalOptions && tour.tourModalOptions.placement) {
-      isValid = regExpr.test(tour.tourModalOptions.placement);
-    }
-    if (!isValid) {
-      throw Error('Placement option of the ng3-tour or one of it step is invalid');
+    if (tour.tourModalOptions?.placement && !regExpr.test(tour.tourModalOptions?.placement)) {
+      throw Error(`Placement option of the ng3-tour is invalid ${tour.tourModalOptions?.placement}`);
     }
   }
 
@@ -68,6 +62,7 @@ export class TourService {
     const tourOptions = setTourProps(restProps);
     this.steps = {...tour}.steps.map((step, i) => {
       step.index = i;
+      step.total = steps.length;
       if (step.description && typeof step.description === 'object') {
         step.description = this.defineLocalName(step.description);
       }
@@ -78,7 +73,7 @@ export class TourService {
       let {modalStyles, ...restProps} = step.tourModalOptions || {};
       modalStyles = {...tourOptions.tourModalOptions.modalStyles, ...modalStyles};
       step.tourModalOptions = {...tourOptions.tourModalOptions, ...restProps, modalStyles};
-      step.ctrlBtns = this.defineDefaultNames(tour.ctrlBtns || defaultTranslation);
+      step.ctrlBtns = this.defineDefaultNames(tour.ctrlBtns || ButtonsDefaultTranslation);
       return step;
     });
     if (isDevMode()) {
@@ -88,7 +83,7 @@ export class TourService {
     }
   }
 
-  private defineLocalName(obj: any): string {
+  private defineLocalName(obj: {title?: string} | {description?: string}): string {
     let result: string;
     if (!this.isBrowser) {
       return '';
@@ -140,7 +135,8 @@ export class TourService {
     return btnCtrls;
   }
 
-  private initStep(step: number): void {
+  public initStep(step: number): void {
+    console.log(step, this.history)
     const previousStep = this.history.length ? this.getLastStep() : {route: null};
     const newStep = this.steps[step];
     this.routeChanged = previousStep.route !== newStep.route;
@@ -160,9 +156,6 @@ export class TourService {
   public getStepsLength() {
     return this.steps.length;
   }
-  public setPresets(presets: {customTemplate: boolean}): void {
-    this.presets = {...presets};
-  }
   public resetStep(stepName: string | number, step: TourStep) {
     const index = typeof stepName === 'number' ? stepName : this.getStepByName(stepName).index;
     this.steps[index] = {...step};
@@ -177,7 +170,7 @@ export class TourService {
     if (this.history.length) return this.steps[this.history.slice(-1)[0]];
     return null;
   }
-  public getStepsStream(): Observable<StepSubject> {
+  public getStepsStream(): BehaviorSubject<StepSubject> {
     return this.stepsStream$;
   }
   public getStepTargetStream(): BehaviorSubject<StepSubject> {
@@ -194,7 +187,7 @@ export class TourService {
   }
   public startTour(tour: Tour): void {
     this.validateTour(tour);
-    const {tourBreak, tourStart, tourEnd, next, prev} = {...TourDefaultEvents, ...tour.tourEvents};
+    const {tourBreak, tourStart, tourEnd, next, prev} = {...DefaulttourEventHandlers, ...tour.tourEvents};
     tourStart({tourEvent: 'Tour start', tour});
     this.tourBreak = tourBreak;
     this.tourEnd = tourEnd;
@@ -213,8 +206,9 @@ export class TourService {
       this.tourEnd({tourEvent: 'Tour end', step: index, history: this.history});
     }
     this.setTourStatus(false);
-    this.steps.length = 0;
+    this.stepTargetStream$.next(null);
     this.stepsStream$.next(null);
+    this.steps.length = 0;
     this.history.length = 0;
   }
   public nextStep() {
