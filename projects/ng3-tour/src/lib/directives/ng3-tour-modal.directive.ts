@@ -4,17 +4,17 @@ import {Subject} from 'rxjs';
 import {map, takeUntil} from 'rxjs/operators';
 
 import {Ng3TourService, StepSubject} from '../../public_api';
+import { TimeInterval } from 'rxjs/internal/operators/timeInterval';
 
 // @dynamic
 @Directive({
   selector: '[ng3TourStep]'
 })
 export class Ng3TourModalDirective implements AfterViewInit, OnDestroy {
-  @Input('ng3TourStep') name: string;
+  @Input('ng3TourStep') name!: string;
   private readonly onDestroy = new Subject<any>();
   isBrowser: boolean;
-  delay: number;
-  timeout: ReturnType<typeof setTimeout>;
+  timeout!: ReturnType<typeof setTimeout>;
   constructor(
     private elemRef: ElementRef,
     private readonly tour: Ng3TourService,   
@@ -31,19 +31,26 @@ export class Ng3TourModalDirective implements AfterViewInit, OnDestroy {
       takeUntil(this.onDestroy),
       map((step: StepSubject) => {
         if (step && step.stepName && this.name === step.stepName) {
-          this.delay = step.delay;
           step.stepTarget = this.elemRef.nativeElement;
-          this.timeout = setTimeout(() => this.tour.getStepTargetStream().next(step), this.delay);
+          
           if (isDevMode()) {
-            console.log('Step in directive: ', step);
+            console.error('Step in directive: ', step, this.elemRef.nativeElement)
+            if (!step.stepTarget) {
+              console.error('target absent', this.elemRef);
+            } else {
+              console.log(this.tour.getSizeAndPosition(step.stepTarget!))
+            }
           }
+          step.targetSize = this.tour.getSizeAndPosition(step.stepTarget!)
+          this.timeout = setTimeout(() => this.tour.getStepTargetStream().next(step), step.delay || 0);
+      
         }
         return step;
       }
     )).subscribe();
   }
   ngOnDestroy() {
-    this.onDestroy.next();
+    this.onDestroy.next(null);
     clearTimeout(this.timeout);
   }
 }

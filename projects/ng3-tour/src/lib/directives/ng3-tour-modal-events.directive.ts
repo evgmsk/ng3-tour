@@ -10,20 +10,21 @@ import {
 } from '@angular/core';
 import {isPlatformBrowser} from '@angular/common';
 
-import {Ng3TourService, ModalEvent} from '../../public_api';
+import {Ng3TourService, IStepEventProps} from '../../public_api';
 // @dynamic
 @Directive({
     selector: '[modalEvent]',
 })
 export class Ng3TourEventDirective implements OnInit {
-    @Input('modalEvent') eventType: string; // possible values 'next', 'prev', 'close'
+    @Input('modalEvent') eventType!: string; // possible values 'next', 'prev', 'close'
+ // possible values 'next', 'prev', 'close'
     isBrowser: boolean;
 
-    @Output() next: EventEmitter<ModalEvent> = new EventEmitter();
-    @Output() prev: EventEmitter<ModalEvent> = new EventEmitter();
-    @Output() done: EventEmitter<ModalEvent> = new EventEmitter();
-    @Output() break: EventEmitter<ModalEvent> = new EventEmitter();
-    handler: () => void;
+    @Output() next: EventEmitter<IStepEventProps> = new EventEmitter();
+    @Output() prev: EventEmitter<IStepEventProps> = new EventEmitter();
+    @Output() done: EventEmitter<IStepEventProps> = new EventEmitter();
+    @Output() break: EventEmitter<IStepEventProps> = new EventEmitter();
+    handler!: () => void;
     constructor(
         private readonly tourService: Ng3TourService,
         // @dynamic
@@ -51,7 +52,7 @@ export class Ng3TourEventDirective implements OnInit {
         return this.handler = () => {
             this.next.emit({
                 tourEvent: 'next',
-                index: this.tourService.getLastStep().index + 1,
+                index: this.tourService.getLastStep().index! + 1,
                 history: this.tourService.getHistory()
             });
             this.tourService.nextStep();
@@ -61,7 +62,7 @@ export class Ng3TourEventDirective implements OnInit {
         return this.handler = () => {
             this.prev.emit({
                 tourEvent: 'prev',
-                index: this.tourService.getLastStep().index - 1,
+                index: this.tourService.getLastStep().index! - 1,
                 history: this.tourService.getHistory()
             });
             this.tourService.prevStep();
@@ -69,16 +70,16 @@ export class Ng3TourEventDirective implements OnInit {
     }
     handleClose() {
         return this.handler = () => {
-            if (this.tourService.getLastStep().index + 1 === this.tourService.getLastStep().total) {
+            if (this.tourService.getLastStep().index! + 1 === this.tourService.getLastStep()['total']) {
                 this.done.emit({
                     tourEvent: 'done',
-                    index: this.tourService.getLastStep().index,
+                    index: this.tourService.getLastStep().index!,
                     history: this.tourService.getHistory()
                 });
             } else {
                 this.break.emit({
                     tourEvent: 'break',
-                    index: this.tourService.getLastStep().index,
+                    index: this.tourService.getLastStep().index!,
                     history: this.tourService.getHistory()
                 });
             }

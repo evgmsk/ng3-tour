@@ -1,42 +1,42 @@
 <div
     class="tour-step-backdrop"
-    [style.height.px]="props.targetWindowSize.pageHeight"
+    [style.height.px]="props.targetFrameSize.pageHeight"
     [style.position]="props.position"
     [style.opacity]="props.opacity"
 >
   <div class="tour-step-backdrop__container" >
     <div 
       class="tour-step-backdrop__top"
-      [style.height.px]="props.targetWindowSize.top"
+      [style.height.px]="props.targetFrameSize.top"
       [style.background]="props.backdropColor"
     ></div>
     <div 
       class="tour-step-backdrop__middle"
-      [style.height.px]="props.targetWindowSize.height"
+      [style.height.px]="props.targetFrameSize.height"
     >
       <div 
         class="tour-step-backdrop__left"
-        [style.height.px]="props.targetWindowSize.height"
-        [style.width.px]="props.targetWindowSize.left"
+        [style.height.px]="props.targetFrameSize.height"
+        [style.width.px]="props.targetFrameSize.left"
         [style.background]="props.backdropColor"
       ></div>
       <div
         class="target-window"
-        [style.width.px]="props.targetWindowSize.width"
-        [style.height.px]="props.targetWindowSize.height"
-        [style.background]="props.targetWindowColor"
+        [style.width.px]="props.targetFrameSize.width"
+        [style.height.px]="props.targetFrameSize.height"
+        [style.background]="props.targetFrameColor"
       >
       </div>
       <div
         class="tour-step-backdrop__right"
-        [style.height.px]="props.targetWindowSize.height"
+        [style.height.px]="props.targetFrameSize.height"
         [style.background]="props.backdropColor"
       ></div>
     </div>
     <div
       class="tour-step-backdrop__bottom"
       [style.background]="props.backdropColor"
-      [style.height.px]="props.targetWindowSize.pageHeight - props.targetWindowSize.bottom"
+      [style.height.px]="props.targetFrameSize.pageHeight - props.targetFrameSize.bottom"
     ></div>
   </div>
 </div>

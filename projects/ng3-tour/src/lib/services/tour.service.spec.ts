@@ -3,14 +3,15 @@ import {Router} from '@angular/router';
 
 import {
   Ng3TourService,
-  DefaultModalProps,
-  DefaultBackdropProps,
-  TourStep,
+  DefaultModal,
+  DefaultBackdrop,
+  ITourStep,
   ButtonsDefaultTranslation,
-  TourEventHandlers
+  ITourEventHandlers,
+  IStepProps
 } from '../../public_api'
 
-const steps1: TourStep[] = [
+const steps1: IStepProps[] = [
     {
       stepName: 'first',
       route: 'home',
@@ -18,14 +19,14 @@ const steps1: TourStep[] = [
       description: 'Almost default settings. Only "top" placement is setted.',
     }
   ];
-const steps2: TourStep[] = [
+const steps2: IStepProps[] = [
   { 
     stepName: 'first',
     route: 'home',
     title: 'Your tour started',
     description: 'Almost default settings. Only "top" placement is setted.',
-    tourModalOptions: {withoutCounter: true}, 
-    backdropOptions: {isBackdrop: false}
+    modal: {withoutCounter: true}, 
+    backdrop: {isBackdrop: false}
   },
   {
     stepName: 'second',
@@ -48,7 +49,7 @@ const steps2: TourStep[] = [
   // {stepName: 'fifth', route: 'home', options: { placement: 'center', smoothScroll: true, stepTargetResize: [5], fixed: true }},
 ];
 
-  const tourEvents: TourEventHandlers = {
+  const tourEvents: ITourEventHandlers = {
     tourStart: ({tour}) => console.log(tour),
     next: ({step, history}) => console.log(step, history),
     prev: ({step}) => console.log(step),

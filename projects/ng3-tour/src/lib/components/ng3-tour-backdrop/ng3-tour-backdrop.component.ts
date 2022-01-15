@@ -1,6 +1,6 @@
 import { Component, Input, OnInit} from '@angular/core';
 
-import {BackdropProps} from '../../interfaces/ng3-tour-backdrop.interface'
+import {IBackdrop} from '../../interfaces/ng3-tour.interface'
 
 @Component({
   selector: 'ng3-tour-backdrop',
@@ -8,7 +8,7 @@ import {BackdropProps} from '../../interfaces/ng3-tour-backdrop.interface'
   styleUrls: ['./ng3-tour-backdrop.component.scss'],
 })
 export class Ng3TourBackdropComponent implements OnInit {
-  @Input('props') props: BackdropProps;
+  @Input('props') props!: IBackdrop;
   
   constructor() { 
     

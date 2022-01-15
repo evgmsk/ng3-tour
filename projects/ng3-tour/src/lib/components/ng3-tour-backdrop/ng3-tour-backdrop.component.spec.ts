@@ -4,8 +4,8 @@ import {Component} from '@angular/core';
 
 import {
   Ng3TourBackdropComponent,
-  BackdropProps,
-  TargetWindowSize
+  IBackdrop,
+  ITargetFrameSize
 } from '../../../public_api';
 
 describe('TourStepBackComponent', () => {
@@ -49,10 +49,10 @@ describe('TourStepBackComponent', () => {
     const Lstyles = fixture.debugElement.query(By.css('.tour-step-backdrop__left')).styles;
     const Rstyles = fixture.debugElement.query(By.css('.tour-step-backdrop__right')).styles;
     console.log('Back color: ', Tstyles);
-    expect(Tstyles['background']).toBe(convertToRGB(component.props.backdropColor));
-    expect(Bstyles['background']).toBe(convertToRGB(component.props.backdropColor));
-    expect(Rstyles['background']).toBe(convertToRGB(component.props.backdropColor));
-    expect(Lstyles['background']).toBe(convertToRGB(component.props.backdropColor));
+    expect(Tstyles['background']).toBe(convertToRGB(component.props.backdropColor!));
+    expect(Bstyles['background']).toBe(convertToRGB(component.props.backdropColor!));
+    expect(Rstyles['background']).toBe(convertToRGB(component.props.backdropColor!));
+    expect(Lstyles['background']).toBe(convertToRGB(component.props.backdropColor!));
   })
 });
 @Component({
@@ -61,18 +61,20 @@ describe('TourStepBackComponent', () => {
             </ng3-tour-backdrop>`
 })
 class WrapperForTestComponent {
-  props: BackdropProps = {
+  props: IBackdrop = {
       backdropColor: 'rgb(20, 60, 60)',
       position: 'absolute',
-      targetWindowColor: 'transparent',
+      targetFrameColor: 'transparent',
       opacity: .7,
-      targetWindowSize: {
+      targetFrameResize: [0],
+      targetFrameSize: {
         pageHeight: 800,
         top: 200,
         left: 150,
         width: 200,
         height: 50,
-      }
+      },
+      isBackdrop: true,
   };
   setColor(color: string): void {
     this.props.backdropColor = color;
@@ -81,13 +83,13 @@ class WrapperForTestComponent {
     this.props.position = pos;
   }
   setBack(color: string): void {
-    this.props.targetWindowColor = color;
+    this.props.targetFrameColor = color;
   }
   setOpacity(num: number): void {
     this.props.opacity = num;
   }
-  setSize(size: TargetWindowSize): void {
-    this.props.targetWindowSize = size;
+  setSize(size: ITargetFrameSize): void {
+    this.props.targetFrameSize = size;
   }
 }
 function convertToRGB(color: string): string {

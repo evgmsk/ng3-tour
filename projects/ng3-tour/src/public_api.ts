@@ -8,6 +8,4 @@ export * from './lib/services/ng3-tour.service';
 export * from './lib/directives/ng3-tour-modal.directive';
 export * from './lib/directives/ng3-tour-modal-events.directive';
 export * from './lib/ng3-tour.module';
-export * from './lib/interfaces/ng3-tour-backdrop.interface';
-export * from './lib/interfaces/ng3-tour-modal.interface';
 export * from './lib/interfaces/ng3-tour.interface';
